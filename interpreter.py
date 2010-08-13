@@ -6,6 +6,16 @@ import sys
 #==========================class definitions
 
 class Node:
+    "Represents a node in the derivation tree and stores all related information"
+    def __init__(self):
+        position = (0.0, 0.0, 0.0)
+        extents = (0.0, 0.0, 0.0)
+    #vector3 position
+    #vector3 extents
+    #quaternion orientation
+    #string names
+    #Node pointer
+    #bool active
     pass
 
 #==========================methods:
