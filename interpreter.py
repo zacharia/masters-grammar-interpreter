@@ -8,20 +8,29 @@ import math3D
 
 class Node:
     "Represents a node in the derivation tree and stores all related information"
+    
     def __init__(self):
         #position of the centre of the node's shape
-        position = zero3()
+        self.position = math3D.zero3()
         #radii of the extents of the node's shape
-        extents = zero3()
+        self.extents = math3D.zero3()
         #the node's shape's orientation in 3D space
-        orientation = zeroQ()
+        self.orientation = math3D.zeroQ()
         #the name/type of the node
-        name = ""
+        self.name = ""
         #pointer to parent node
-        parent = None
+        self.parent = None
         #whether the node is active or not
-        active = true
+        self.active = True
+        #a list of children object
+        self.children = []
 
+    def displayTree(depth = 0):
+        """this method displays a tree to the command line."""
+        ret = "\t" * depth
+        ret = ret + self.name + "\n"
+        for i in children:
+            ret += i.displayTree(depth + 1)
 
 #==========================methods:
 
@@ -60,7 +69,6 @@ def get_input(infile):
     #this does an eval of everything in code and puts it into the global symbol table thing
     exec code in globals()
 
-
 #===========================main code:
 
 if __name__ == "__main__":
@@ -72,3 +80,11 @@ if __name__ == "__main__":
 
     #get the input file
     get_input(options["input_file"])
+
+    root, c1, c2 = [Node() for i in range(3)]
+    root.name = "root"
+    c1.name = "c1"
+    c2.name = "c2"
+    root.children.append(c1)
+    root.children.append(c2)
+    root.displayTree()
