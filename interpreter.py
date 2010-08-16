@@ -2,21 +2,26 @@
 
 #==========================import stuff
 import sys
+import math3D
 
 #==========================class definitions
 
 class Node:
     "Represents a node in the derivation tree and stores all related information"
     def __init__(self):
-        position = (0.0, 0.0, 0.0)
-        extents = (0.0, 0.0, 0.0)
-    #vector3 position
-    #vector3 extents
-    #quaternion orientation
-    #string names
-    #Node pointer
-    #bool active
-    pass
+        #position of the centre of the node's shape
+        position = zero3()
+        #radii of the extents of the node's shape
+        extents = zero3()
+        #the node's shape's orientation in 3D space
+        orientation = zeroQ()
+        #the name/type of the node
+        name = ""
+        #pointer to parent node
+        parent = None
+        #whether the node is active or not
+        active = true
+
 
 #==========================methods:
 
