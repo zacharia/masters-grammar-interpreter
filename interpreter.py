@@ -25,12 +25,13 @@ class Node:
         #a list of children object
         self.children = []
 
-    def displayTree(depth = 0):
+    def displayTree(self, depth = 0):
         """this method displays a tree to the command line."""
         ret = "\t" * depth
         ret = ret + self.name + "\n"
-        for i in children:
+        for i in self.children:
             ret += i.displayTree(depth + 1)
+        return ret
 
 #==========================methods:
 
@@ -87,4 +88,4 @@ if __name__ == "__main__":
     c2.name = "c2"
     root.children.append(c1)
     root.children.append(c2)
-    root.displayTree()
+    print root.displayTree()
