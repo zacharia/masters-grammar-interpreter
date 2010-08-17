@@ -30,7 +30,7 @@ class Node:
         #add the correct indentation
         ret = "\t" * depth
         #add the node's details (just name atm)
-        ret = ret + self.name + "\n"
+        ret = ret + "%s : %s\n" % (self.name, self.active)
         #recurse on the children, adding their results to the return string
         for i in self.children:
             ret += i.displayTree(depth + 1)
@@ -120,16 +120,17 @@ def continueDerivation(root, iterations, maxIterations):
 
 def doParallelIteration(root):
     """This recursively does one iteration of parallel rule execution on the tree"""
-    #if the current is active and there is a rule for doing something to it
-    if root.active and hasattr(self, root.name):
-        #then get that rule's method and store a reference to it in rule_method
-        rule_method = getattr(self, root.name)
-        #then execute the rule on the current node and add the result as a child
-        root.children.append( rule_method(root.parent) )
-        root.active = False
 
     for i in root.children:
         doParallelIteration(i)
+    
+    #if the current is active
+    if root.active:
+        #then get that rule's method and store a reference to it in rule_method
+        rule_method = globals()[root.name]
+        #then execute the rule on the current node and add the result as a child
+        root.children.append( rule_method(root.parent) )
+        root.active = False
     
 
 def doSerialIteration(root):
