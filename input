@@ -1,7 +1,13 @@
+#conventions:
+#returns a list of node objects
+#takes a single argument, which is the parent node
+#defines a Node object with name axiom. This is the axiom of the grammar
+
 axiom = Node()
 axiom.name = "thing"
 
 def thing(parent):
     ret = Node()
     ret.name = "thing"
-    return ret
+    bleh = Node()
+    return [ret, ret]

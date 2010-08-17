@@ -127,10 +127,11 @@ def doParallelIteration(root):
     #if the current is active
     if root.active:
         #then get that rule's method and store a reference to it in rule_method
-        rule_method = globals()[root.name]
-        #then execute the rule on the current node and add the result as a child
-        root.children.append( rule_method(root.parent) )
-        root.active = False
+        if root.name in globals():
+            rule_method = globals()[root.name]
+            #then execute the rule on the current node and add the result as a child
+            root.children.extend( rule_method(root.parent) )
+            root.active = False
     
 
 def doSerialIteration(root):
