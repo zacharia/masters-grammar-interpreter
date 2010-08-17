@@ -1,4 +1,7 @@
-a = 6
+axiom = Node()
+axiom.name = "thing"
 
-def dostuff():
-    print "aaaaa"
+def thing():
+    ret = Node()
+    ret.name = "thing"
+    return ret
