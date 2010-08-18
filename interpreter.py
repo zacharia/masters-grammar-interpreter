@@ -9,21 +9,24 @@ import math3D
 class Node:
     "Represents a node in the derivation tree and stores all related information"
     
-    def __init__(self):
+    def __init__(self, in_name = "", in_position = math3D.zero3(), in_extents = math3D.zero3(), in_orientation = math3D.zeroQ(), in_parent = None, in_active = True, in_children = None):
         #position of the centre of the node's shape
-        self.position = math3D.zero3()
+        self.position = in_position
         #radii of the extents of the node's shape
-        self.extents = math3D.zero3()
+        self.extents = in_extents
         #the node's shape's orientation in 3D space
-        self.orientation = math3D.zeroQ()
+        self.orientation = in_orientation
         #the name/type of the node
-        self.name = ""
+        self.name = in_name
         #pointer to parent node
-        self.parent = None
+        self.parent = in_parent
         #whether the node is active or not
-        self.active = True
+        self.active = in_active
         #a list of children object
-        self.children = []
+        if in_children == None:
+            self.children = []
+        else:
+            self.children = in_children
 
     def displayTree(self, depth = 0):
         """this method displays a tree to the command line."""
@@ -93,7 +96,17 @@ def hasNonTerminals(root):
     """This method determines whether there are any non-terminals nodes left in the derivation tree
     given as an argument."""
     #don't forget to check for non-active nodes as well
-    return True
+
+    if root.active and root.name in globals():
+        return True
+    
+    #recursive part - loop through the children
+    for i in root.children:
+        #if a child has non-terminals, then the whole tree does. Return true
+        if hasNonTerminals(i):
+            return True
+    #if we go through all the children trees, and none have non-terminals, then return false
+    return False
 
 
 def continueDerivation(root, iterations, maxIterations):
@@ -130,7 +143,7 @@ def doParallelIteration(root):
         if root.name in globals():
             rule_method = globals()[root.name]
             #then execute the rule on the current node and add the result as a child
-            root.children.extend( rule_method(root.parent) )
+            root.children.extend( rule_method(root) )
             root.active = False
     
 
@@ -139,16 +152,19 @@ def doSerialIteration(root):
     pass
 
     
-def deriveTree(axiom, maxIterations = -1, parallel_execution = False):
+def deriveTree(axiom, options):
     """This method takes the given input axiom and creates the derivation tree from it.
     It assumes that the grammar has already been exec'd into the program."""
     iterations = 0
     axiom.parent = None
     
-    while continueDerivation(axiom, iterations, maxIterations):
+    while continueDerivation(axiom, iterations, options["max_iterations"]):
 
+        if options["verbose"]:
+            print "doing iteration: %d" % (iterations+1)
+        
         #do an iteration of either parallel or serial execution
-        if parallel_execution:
+        if options["parallel_execution"]:
             doParallelIteration(axiom)
         else:
             doSerialIteration(axiom)
@@ -193,5 +209,6 @@ if __name__ == "__main__":
     # root.children.append(c2)
     # print root.displayTree()
 
-    result = deriveTree(axiom, options["max_iterations"], options["parallel_execution"])
+    result = deriveTree(axiom, options)
+    print "\n"
     print result.displayTree()

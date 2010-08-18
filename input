@@ -3,11 +3,13 @@
 #takes a single argument, which is the parent node
 #defines a Node object with name axiom. This is the axiom of the grammar
 
-axiom = Node()
-axiom.name = "thing"
+axiom = Node("thing")
 
 def thing(parent):
-    ret = Node()
-    ret.name = "thing"
-    bleh = Node()
-    return [ret, ret]
+    ret = Node("thing")
+    bleh = Node("bleh")
+    return [ret, bleh]
+
+def bleh(parent):
+    ret = Node("banana sundae")
+    return [ret]
