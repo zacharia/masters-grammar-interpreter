@@ -3,6 +3,7 @@
 #==========================import stuff
 import sys
 import math3D
+import copy
 
 #==========================class definitions
 
@@ -148,8 +149,25 @@ def doParallelIteration(root):
     
 
 def doSerialIteration(root):
-    """This recursively does one iteration of serial rule execution on the tree"""
-    pass
+    """This method does one iteration of serial rule execution on the tree, using a breadth-first
+    search to find the next node to operate on."""
+    #this list is the queue used for the breadth first search
+    bfs_queue = [root]
+    #loop through the queue of nodes to check
+    for i in bfs_queue:
+        #if the current node is active and non-terminal
+        if i.active and i.name in globals():
+        #then get that rule's method and store a reference to it in rule_method
+            rule_method = globals()[i.name]
+            #then execute the rule on the current node and add the result as a child
+            i.children.extend( rule_method(root) )
+            i.active = False
+            #we're only doing one derivation per iteration, so we can quit after doing one.
+            return
+        #if the current node is not eligible to derive
+        else:
+            #then add it's children to the bfs queue.
+            bfs_queue.extend(i.children)
 
     
 def deriveTree(axiom, options):
@@ -161,7 +179,7 @@ def deriveTree(axiom, options):
     while continueDerivation(axiom, iterations, options["max_iterations"]):
 
         if options["verbose"]:
-            print "doing iteration: %d" % (iterations+1)
+            print "----------after iteration: %d----------\n" % (iterations+1)
         
         #do an iteration of either parallel or serial execution
         if options["parallel_execution"]:
@@ -171,6 +189,9 @@ def deriveTree(axiom, options):
         
         #increase the iteration counter
         iterations += 1
+
+        if options["verbose"]:
+            print axiom.displayTree()
 
     return axiom
     
@@ -201,6 +222,9 @@ if __name__ == "__main__":
     #get the input file
     get_input(options["input_file"])
 
+    if options["verbose"]:
+        print "AXIOM:\n" + axiom.displayTree()
+
     # root, c1, c2 = [Node() for i in range(3)]
     # root.name = "root"
     # c1.name = "c1"
@@ -210,5 +234,7 @@ if __name__ == "__main__":
     # print root.displayTree()
 
     result = deriveTree(axiom, options)
-    print "\n"
-    print result.displayTree()
+
+    if options["verbose"]:
+        print "===================FINAL RESULT===================\n"
+        print result.displayTree()
