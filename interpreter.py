@@ -29,16 +29,53 @@ class Node:
         else:
             self.children = in_children
 
+    def toString(self, computer_readable = False, verbose = True):
+        """This method returns a string representation of the current node, if verbose is true, all
+        attributes are included in the string, if not, then only a summary string is returned. If the second
+        argument is true, then the output is produced for easy parsing by a program."""
+        if computer_readable:
+            ret_string = ""
+            #this is assumed to always be verbose
+            ret_string += "%s %s" % (self.name, self.active)
+            for i in self.position:
+                ret_string += " %s" % i
+            for i in self.extents:
+                ret_string += " %s" % i
+            for i in self.orientation:
+                ret_string += " %s" % i
+            return ret_string
+        else:
+            if verbose:
+                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s" % (self.name, self.active, self.position, self.extents, self.orientation)
+            else:
+                return "name: %s | active: %s" % (self.name, self.active)
+
     def displayTree(self, depth = 0):
         """this method displays a tree to the command line."""
         #add the correct indentation
         ret = "\t" * depth
         #add the node's details (just name atm)
-        ret = ret + "%s : %s\n" % (self.name, self.active)
+        ret = ret + self.toString(False, False) + "\n"
         #recurse on the children, adding their results to the return string
         for i in self.children:
             ret += i.displayTree(depth + 1)
         #return the return string
+        return ret
+
+    def displayActiveNodes(self):
+        """This method creates a string containing only the active nodes of the tree, basically the nodes that
+        actually make up the final product of the derivation tree."""
+        ret = ""
+        #if the current node is active, then add it to the return string
+        if self.active:
+            ret += self.toString(True)
+            ret += " # "
+
+        #recurse on the children of this node
+        for i in self.children:
+            ret += i.displayActiveNodes()
+
+        #return the final string that we produce.
         return ret
 
 #==========================methods:
@@ -225,16 +262,10 @@ if __name__ == "__main__":
     if options["verbose"]:
         print "AXIOM:\n" + axiom.displayTree()
 
-    # root, c1, c2 = [Node() for i in range(3)]
-    # root.name = "root"
-    # c1.name = "c1"
-    # c2.name = "c2"
-    # root.children.append(c1)
-    # root.children.append(c2)
-    # print root.displayTree()
-
     result = deriveTree(axiom, options)
 
     if options["verbose"]:
         print "===================FINAL RESULT===================\n"
         print result.displayTree()
+
+    print result.displayActiveNodes()
