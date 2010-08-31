@@ -29,6 +29,12 @@ class Node:
         else:
             self.children = in_children
 
+        #the stuff for symmetry
+        self.symmetry_type = "" #can be rotation or reflection
+        self.symmetry_num = 1 #this is how many times to repeat the thing in the 360 degrees for rotational symmetry
+        self.symmetry_point = math3D.zero3()
+        self.symmetry_vector = math3D.zero3()
+
     def toString(self, computer_readable = False, verbose = True):
         """This method returns a string representation of the current node, if verbose is true, all
         attributes are included in the string, if not, then only a summary string is returned. If the second
@@ -77,6 +83,12 @@ class Node:
 
         #return the final string that we produce.
         return ret
+
+    def setSymmetry(self, sym_type = "rotational", num = 2, point = math3D.zero3(), vector = math3D.zero3()):
+        self.symmetry_type = sym_type
+        self.symmetry_num = num
+        self.symmetry_point = point
+        self.symmetry_vector = vector
 
 #==========================methods:
 
@@ -231,7 +243,38 @@ def deriveTree(axiom, options):
             print axiom.displayTree()
 
     return axiom
+
+
+def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):
+    """This method takes a subtree and rotational symmetry parameters and returns a list of subtrees that
+    represent the rotational reflections of the input subtree."""
+    ret = [ copy.deepcopy(root) for i in range(sym_num) ]
     
+    return ret
+
+
+def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):
+    """This method takes a subtree and some reflective symmetry parameters and returns a subtree
+    that is the reflective rotation of the original subtree."""
+    ret = copy.deepcopy(root)
+
+    return ret
+
+
+def doSymmetry(root):
+    """This method is called after the deriveTree method has run, and searches the tree for
+    any subtrees with symmetry information set. It then creates the symmetric reflections
+    of those subtrees."""
+    
+    for i in root.children:
+        doSymmetry(i)
+        
+    for i in root.children:
+        if i.symmetry_type == "rotational":
+            root.children.extend(makeRotationalSymmetryCopy(root, i.symmetry_num, i.symmetry_point, i.symmetry_vector))
+        if i.symmetry_type == "reflective":
+            root.children.append(makeReflectiveSymmetryCopy(root, i.symmetry_point, i.symmetry_vector))
+
 #===========================main code:
 
 #The file that gets read in and exec'd needs to define a Node object called 'axiom', which is the
@@ -263,6 +306,10 @@ if __name__ == "__main__":
         print "AXIOM:\n" + axiom.displayTree()
 
     result = deriveTree(axiom, options)
+
+    if options["verbose"]:
+        print "Creating symmetry branches."
+    doSymmetry(result)
 
     if options["verbose"]:
         print "===================FINAL RESULT===================\n"

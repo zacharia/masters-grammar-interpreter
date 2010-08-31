@@ -8,6 +8,7 @@ axiom = Node("thing")
 def thing(parent):
     ret = Node("thing")
     bleh = Node("bleh")
+    ret.setSymmetry("reflective", math3D.zero3(), math3D.zero3())
     return [ret, bleh]
 
 def bleh(parent):
