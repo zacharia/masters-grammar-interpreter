@@ -30,7 +30,7 @@ class Node:
             self.children = in_children
 
         #the stuff for symmetry
-        self.symmetry_type = "" #can be rotation or reflection
+        self.symmetry_type = "None" #can be rotation or reflection
         self.symmetry_num = 1 #this is how many times to repeat the thing in the 360 degrees for rotational symmetry
         self.symmetry_point = math3D.zero3()
         self.symmetry_vector = math3D.zero3()
@@ -52,19 +52,19 @@ class Node:
             return ret_string
         else:
             if verbose:
-                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s" % (self.name, self.active, self.position, self.extents, self.orientation)
+                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s | symmetry: % s" % (self.name, self.active, self.position, self.extents, self.orientation, self.symmetry_type)
             else:
                 return "name: %s | active: %s" % (self.name, self.active)
 
-    def displayTree(self, depth = 0):
+    def displayTree(self, depth = 0, verbose = False):
         """this method displays a tree to the command line."""
         #add the correct indentation
         ret = "\t" * depth
         #add the node's details (just name atm)
-        ret = ret + self.toString(False, False) + "\n"
+        ret = ret + self.toString(False, verbose) + "\n"
         #recurse on the children, adding their results to the return string
         for i in self.children:
-            ret += i.displayTree(depth + 1)
+            ret += i.displayTree(depth + 1, verbose)
         #return the return string
         return ret
 
@@ -84,7 +84,7 @@ class Node:
         #return the final string that we produce.
         return ret
 
-    def setSymmetry(self, sym_type = "rotational", num = 2, point = math3D.zero3(), vector = math3D.zero3()):
+    def setSymmetry(self, sym_type = "rotational", point = math3D.zero3(), vector = math3D.zero3(), num = 2):
         self.symmetry_type = sym_type
         self.symmetry_num = num
         self.symmetry_point = point
@@ -248,16 +248,20 @@ def deriveTree(axiom, options):
 def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):
     """This method takes a subtree and rotational symmetry parameters and returns a list of subtrees that
     represent the rotational reflections of the input subtree."""
-    ret = [ copy.deepcopy(root) for i in range(sym_num) ]
-    
+    #make a working copy of the node for each reflection we need to make
+    ret = [ copy.deepcopy(root) for i in range(sym_num-1) ]
+
+    #return the list of reflections
     return ret
 
 
 def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):
     """This method takes a subtree and some reflective symmetry parameters and returns a subtree
     that is the reflective rotation of the original subtree."""
+    #make a working copy of the subtree to reflect. This will be transformed into the relfection
     ret = copy.deepcopy(root)
 
+    #return the reflection
     return ret
 
 
@@ -265,15 +269,26 @@ def doSymmetry(root):
     """This method is called after the deriveTree method has run, and searches the tree for
     any subtrees with symmetry information set. It then creates the symmetric reflections
     of those subtrees."""
-    
+
+    #loop through the children of the node
     for i in root.children:
-        doSymmetry(i)
-        
-    for i in root.children:
-        if i.symmetry_type == "rotational":
-            root.children.extend(makeRotationalSymmetryCopy(root, i.symmetry_num, i.symmetry_point, i.symmetry_vector))
-        if i.symmetry_type == "reflective":
-            root.children.append(makeReflectiveSymmetryCopy(root, i.symmetry_point, i.symmetry_vector))
+        #recurse on the children and store the returned value
+        doSymmetry(i)#ans = doSymmetry(i)
+        #if something other than None is returned, then it's a symmetric reflection(s) of the child.
+        #if ans != None:
+            #add the reflection(s) to the node's children
+            #root.children.insert(0,ans)
+
+    #if the current node is symmetric, then create the relfection(s) of it and return it/them
+    if root.symmetry_type == "rotational":
+        #return makeRotationalSymmetryCopy(root, root.symmetry_num, root.symmetry_point, root.symmetry_vector)
+        root.children.extend(makeRotationalSymmetryCopy(root, root.symmetry_num, root.symmetry_point, root.symmetry_vector))
+    elif root.symmetry_type == "reflective":
+        #return makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector)
+         root.children.insert(0, makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector))
+    #if it's not symmetric, then do nothing.
+    #else:
+        #return None
 
 #===========================main code:
 
@@ -313,6 +328,6 @@ if __name__ == "__main__":
 
     if options["verbose"]:
         print "===================FINAL RESULT===================\n"
-        print result.displayTree()
+        print result.displayTree(verbose=True)
 
     print result.displayActiveNodes()

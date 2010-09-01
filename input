@@ -3,15 +3,18 @@
 #takes a single argument, which is the parent node
 #defines a Node object with name axiom. This is the axiom of the grammar
 
-axiom = Node("thing")
+axiom = Node("start")
 
-def thing(parent):
-    ret = Node("thing")
-    bleh = Node("bleh")
-    ret.setSymmetry("reflective", math3D.zero3(), math3D.zero3())
-    return [ret, bleh]
-
-def bleh(parent):
-    ret = Node("banana sundae")
+def start(parent):
+    ret = Node("one")
+    ret.setSymmetry("rotational", math3D.zero3(), math3D.zero3(), 2)
     return [ret]
 
+def one(parent):
+    ret = Node("two")
+    
+    return [ret]
+
+def two(parent):
+    ret = Node("two")
+    return [ret]
