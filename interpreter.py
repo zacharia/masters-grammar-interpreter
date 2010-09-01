@@ -54,14 +54,17 @@ class Node:
             if verbose:
                 return "name: %s | active: %s | position: %s | extents: %s | orientation: %s | symmetry: % s" % (self.name, self.active, self.position, self.extents, self.orientation, self.symmetry_type)
             else:
-                return "name: %s | active: %s" % (self.name, self.active)
+                return "name: %s | active: %s | symmetry: %s" % (self.name, self.active, self.symmetry_type)
 
     def displayTree(self, depth = 0, verbose = False):
         """this method displays a tree to the command line."""
         #add the correct indentation
         ret = "\t" * depth
         #add the node's details (just name atm)
-        ret = ret + self.toString(False, verbose) + "\n"
+        if verbose:
+            ret = ret + self.toString(False, True) + "\n"
+        else:
+            ret = ret + self.toString(False, False) + "\n"
         #recurse on the children, adding their results to the return string
         for i in self.children:
             ret += i.displayTree(depth + 1, verbose)
@@ -261,6 +264,28 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
     #make a working copy of the subtree to reflect. This will be transformed into the relfection
     ret = copy.deepcopy(root)
 
+    #do an iterative walk of the tree (breadth first walk), updating the nodes as we walk through them
+    nodes = copy.copy(ret.children)
+    #add root to the front of the list
+    nodes.insert(0, root)
+    for i in nodes:
+        #update i
+
+        #the formula that this code does was provided by julian. It's apparently a generalized reflection equation
+        v = math3D.sub3(i.position, i.symmetry_point)
+        i.position = math3D.sub3(\
+            i.position,\
+            math3D.scale3(\
+                math3D.scale3(\
+                    math3D.normalize3(i.symmetry_vector),\
+                    2),\
+                math3D.dot3(\
+                    v,\
+                    math3D.normalize3(i.symmetry_vector))))
+
+        #add i's children to the nodes list
+        nodes.extend(i.children)
+    
     #return the reflection
     return ret
 

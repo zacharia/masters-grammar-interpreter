@@ -6,8 +6,8 @@
 axiom = Node("start")
 
 def start(parent):
-    ret = Node("one")
-    ret.setSymmetry("rotational", math3D.zero3(), math3D.zero3(), 2)
+    ret = Node("one", in_position=(1.0, 0.0, 0.0), in_orientation=math3D.fromAngleAxisQ(90, 0,1,0))
+    ret.setSymmetry("reflective", math3D.zero3(), (1.0, 0.0, 0.0))
     return [ret]
 
 def one(parent):
