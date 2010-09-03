@@ -4,6 +4,7 @@
 import sys
 import math3D
 import copy
+import math
 
 #==========================class definitions
 
@@ -254,6 +255,28 @@ def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sy
     #make a working copy of the node for each reflection we need to make
     ret = [ copy.deepcopy(root) for i in range(sym_num-1) ]
 
+    count = 0
+    for i in ret:
+        count += 1
+        #do an iterative walk of the tree (breadth first walk), updating the nodes as we walk through them
+        nodes = copy.copy(i.children)
+        #add root to the front of the list
+        nodes.insert(0, i)
+        for j in nodes:
+            #update j's position by rotating it's position vector around the quaternion formed from the symmetry information
+            j.position = math3D.rotateVectorQ(\
+                math3D.fromAngleAxisQ(\
+                    ((math.pi * 2) / sym_num) * count,\
+                    sym_vector[0], sym_vector[1], sym_vector[2]),\
+                j.position)
+
+            #update j's orientation using quaternion slerping
+            #do this by rotating the orientation of i by the axis angle quaternion formed from the symmetry_vector
+            #and the appropriate angle.
+
+            #add j's children to the nodes list
+            nodes.extend(j.children)
+    
     #return the list of reflections
     return ret
 
@@ -282,6 +305,9 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
                 math3D.dot3(\
                     v,\
                     math3D.normalize3(i.symmetry_vector))))
+
+        #mirror the orientation of the object. This can't be done with a rotation.
+        i.orientation = math3D.conjugateQ(i.orientation)
 
         #add i's children to the nodes list
         nodes.extend(i.children)

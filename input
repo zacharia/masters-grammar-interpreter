@@ -5,6 +5,8 @@
 
 axiom = Node("start")
 
+#=============================reflection stuff
+
 def start(parent):
     ret = Node("one", in_position=(1.0, 0.0, 0.0), in_orientation=math3D.fromAngleAxisQ(90, 0,1,0))
     ret.setSymmetry("reflective", math3D.zero3(), (1.0, 0.0, 0.0))
@@ -18,3 +20,19 @@ def one(parent):
 def two(parent):
     ret = Node("two")
     return [ret]
+
+#===============================rotation stuff
+
+def begin2(parent):
+    ret = Node("one", in_position=(1.0, 0.0, 0.0), in_orientation=math3D.fromAngleAxisQ(90, 0,1,0))
+    ret.setSymmetry("rotational", math3D.zero3(), (0.0, 1.0, 0.0), 3)
+    return [ret]
+
+def one2(parent):
+    ret = Node("two")
+    
+    return [ret]
+
+# def two(parent):
+#     ret = Node("two")
+#     return [ret]
