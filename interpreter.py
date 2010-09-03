@@ -294,7 +294,8 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
     for i in nodes:
         #update i
 
-        #the formula that this code does was provided by julian. It's apparently a generalized reflection equation
+        #the formula that this code does was provided by julian. It's apparently a generalized reflection equation.
+        #this does the change in position.
         v = math3D.sub3(i.position, i.symmetry_point)
         i.position = math3D.sub3(\
             i.position,\
@@ -307,6 +308,7 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
                     math3D.normalize3(i.symmetry_vector))))
 
         #mirror the orientation of the object. This can't be done with a rotation.
+        #Julian thinks the conjugate might be what we're looking for, but it needs to be visually tested.
         i.orientation = math3D.conjugateQ(i.orientation)
 
         #add i's children to the nodes list
