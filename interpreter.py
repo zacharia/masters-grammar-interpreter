@@ -273,6 +273,11 @@ def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sy
             #update j's orientation using quaternion slerping
             #do this by rotating the orientation of i by the axis angle quaternion formed from the symmetry_vector
             #and the appropriate angle.
+            j.orientation = math3D.multiplyQ(\
+                math3D.fromAngleAxisQ(\
+                    ((math.pi * 2) / sym_num) * count,\
+                    sym_vector[0], sym_vector[1], sym_vector[2]),\
+                j.orientation)
 
             #add j's children to the nodes list
             nodes.extend(j.children)
@@ -309,7 +314,9 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
 
         #mirror the orientation of the object. This can't be done with a rotation.
         #Julian thinks the conjugate might be what we're looking for, but it needs to be visually tested.
-        i.orientation = math3D.conjugateQ(i.orientation)
+        #i.orientation = math3D.conjugateQ(i.orientation)
+        #on second thoughts, just break the quaternion up into a rotation matrix, get the column vectors,
+        #apply the reflection formula to each of them, and then put it back together to get the relfect orientation
 
         #add i's children to the nodes list
         nodes.extend(i.children)
