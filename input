@@ -3,13 +3,13 @@
 #takes a single argument, which is the parent node
 #defines a Node object with name axiom. This is the axiom of the grammar
 
-axiom = Node("begin")
+#axiom = Node("begin")
 axiom = Node("start")
 
 #=============================reflection stuff
 
 def start(parent):
-    ret = Node("cube", in_position=(4.0, 4.0, 4.0), in_extents=(1,2,1), in_orientation=math3D.fromAngleAxisQ(45, 1,0,0))
+    ret = Node("cube", in_position=(4.0, 4.0, 4.0), in_extents=(1,2,1), in_orientation=math3D.fromAngleAxisQ(math.pi / 4, 1,0,0))
     ret.setSymmetry("reflective", (0,0,0), (1.0, 1.0, 1.0))
     return [ret]
 

@@ -317,7 +317,20 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
         #i.orientation = math3D.conjugateQ(i.orientation)
         #on second thoughts, just break the quaternion up into a rotation matrix, get the column vectors,
         #apply the reflection formula to each of them, and then put it back together to get the relfect orientation
+        rot_mat = math3D.toMatrixQ(i.orientation)
+        old_v1 = (rot_mat[0], rot_mat[4], rot_mat[8])
+        old_v2 = (rot_mat[1], rot_mat[5], rot_mat[9])
+        old_v3 = (rot_mat[2], rot_mat[6], rot_mat[10])
+        norm_sym_vect = math3D.normalize3(sym_vector)
 
+        for j in (old_v1, old_v2, old_v3):
+            dot_thing = math3D.dot3(j, norm_sym_vect) / math3D.dot3(norm_sym_vect, norm_sym_vect)
+            j = math3D.sub3(\
+                j,\
+                math3D.scale3(norm_sym_vect, 2 * dot_thing))
+
+        i.orientation = math3D.fromMatrixQ(old_v1[0], old_v1[1], old_v1[2], old_v2[0], old_v2[1], old_v2[2], old_v3[0], old_v3[1], old_v3[2])
+        
         #add i's children to the nodes list
         nodes.extend(i.children)
     

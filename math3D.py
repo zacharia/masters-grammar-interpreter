@@ -111,6 +111,31 @@ def toMatrixQ(q):
             xz-yw, yz+xw, 1.0-xx-yy, 0.0,
             0.0, 0.0, 0.0, 1.0)
 
+#I added this code in myself.
+#it was adapted from the cgkit library. All credit goes to the original authors
+#I might be confusing row major with column major. Check this.
+def fromMatrixQ(m00, m01, m02, m10, m11, m12, m20, m21, m22):
+    epsilon = 0.0000001
+            
+    d1,d2,d3 = m00,m11,m22
+    t = d1+d2+d3+1.0
+    if t > epsilon:
+        s = 0.5/sqrt(t)
+        return (0.25/s, (m21-m12)*s, (m02-m20)*s, (m10-m01)*s)
+    else:
+        ad1 = d1p
+        ad2 = d2
+        ad3 = d3
+        if ad1>=ad2 and ad1>=ad3:
+            s = sqrt(1.0+d1-d2-d3)*2.0
+            return (0.5/s, (m01+m10)/s, (m02+m20)/s,(m12+m21)/s)
+        elif ad2>=ad1 and ad2>=ad3:
+            s = sqrt(1.0+d2-d1-d3)*2.0
+            return ((m01+m10)/s,0.5/s,(m12+m21)/s,(m02+m20)/s)
+        else:
+            s = sqrt(1.0+d3-d1-d2)*2.0
+            return ((m02+m20)/s,(m12+m21)/s,0.5/s,(m01+m10)/s)        
+
 def rotateVectorQ(q,v):
     qw, qx, qy, qz = q[0], q[1], q[2], q[3]
     x, y, z = v[0], v[1], v[2]
