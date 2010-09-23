@@ -11,7 +11,7 @@ import math
 class Node:
     "Represents a node in the derivation tree and stores all related information"
     
-    def __init__(self, in_name = "", in_position = math3D.zero3(), in_extents = math3D.zero3(), in_orientation = math3D.zeroQ(), in_parent = None, in_active = True, in_children = None):
+    def __init__(self, in_name = "", in_position = math3D.zero3(), in_extents = math3D.zero3(), in_orientation = math3D.zeroQ(), in_parent = None, in_active = True, in_children = None, in_additive = True):
         #position of the centre of the node's shape
         self.position = in_position
         #radii of the extents of the node's shape
@@ -24,6 +24,8 @@ class Node:
         self.parent = in_parent
         #whether the node is active or not
         self.active = in_active
+        #whether this node is additive or subtractive
+        self.additive = in_additive
         #a list of children object
         if in_children == None:
             self.children = []
@@ -43,7 +45,7 @@ class Node:
         if computer_readable:
             ret_string = ""
             #this is assumed to always be verbose
-            ret_string += "%s %s" % (self.name, self.active)
+            ret_string += "%s %s %s" % (self.name, self.active, self.additive)
             for i in self.position:
                 ret_string += " %s" % i
             for i in self.extents:
@@ -53,7 +55,7 @@ class Node:
             return ret_string
         else:
             if verbose:
-                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s | symmetry: % s" % (self.name, self.active, self.position, self.extents, self.orientation, self.symmetry_type)
+                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s | symmetry: %s | additive: %s" % (self.name, self.active, self.position, self.extents, self.orientation, self.symmetry_type, self.additive)
             else:
                 return "name: %s | active: %s | symmetry: %s" % (self.name, self.active, self.symmetry_type)
 
@@ -198,7 +200,7 @@ def doParallelIteration(root):
             rule_method = globals()[root.name]
             #then execute the rule on the current node and add the result as a child
             root.children.extend( rule_method(root) )
-            root.active = False
+            #root.active = False
     
 
 def doSerialIteration(root):
@@ -214,7 +216,7 @@ def doSerialIteration(root):
             rule_method = globals()[i.name]
             #then execute the rule on the current node and add the result as a child
             i.children.extend( rule_method(root) )
-            i.active = False
+            #i.active = False
             #we're only doing one derivation per iteration, so we can quit after doing one.
             return
         #if the current node is not eligible to derive
@@ -313,10 +315,9 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
                     math3D.normalize3(i.symmetry_vector))))
 
         #mirror the orientation of the object. This can't be done with a rotation.
-        #Julian thinks the conjugate might be what we're looking for, but it needs to be visually tested.
-        #i.orientation = math3D.conjugateQ(i.orientation)
-        #on second thoughts, just break the quaternion up into a rotation matrix, get the column vectors,
-        #apply the reflection formula to each of them, and then put it back together to get the relfect orientation
+        #This should be done by storing a rotation matrix, not a quaternion and mirroring the individual vectors in it.
+        i.orientation = math3D.conjugateQ(i.orientation)
+
         rot_mat = math3D.toMatrixQ(i.orientation)
         old_v1 = (rot_mat[0], rot_mat[4], rot_mat[8])
         old_v2 = (rot_mat[1], rot_mat[5], rot_mat[9])
@@ -330,6 +331,8 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
                 math3D.scale3(norm_sym_vect, 2 * dot_thing))
 
         i.orientation = math3D.fromMatrixQ(old_v1[0], old_v1[1], old_v1[2], old_v2[0], old_v2[1], old_v2[2], old_v3[0], old_v3[1], old_v3[2])
+        #i.orientation = math3D.fromMatrixQ(old_v1[0], old_v2[0], old_v3[0], old_v1[1], old_v2[1], old_v3[1], old_v1[2], old_v2[2], old_v3[2])
+        #end of buggered up code that doesn't work.
         
         #add i's children to the nodes list
         nodes.extend(i.children)

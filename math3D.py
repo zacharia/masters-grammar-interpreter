@@ -123,7 +123,7 @@ def fromMatrixQ(m00, m01, m02, m10, m11, m12, m20, m21, m22):
         s = 0.5/sqrt(t)
         return (0.25/s, (m21-m12)*s, (m02-m20)*s, (m10-m01)*s)
     else:
-        ad1 = d1p
+        ad1 = d1
         ad2 = d2
         ad3 = d3
         if ad1>=ad2 and ad1>=ad3:
