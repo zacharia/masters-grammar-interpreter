@@ -11,13 +11,15 @@ import math
 class Node:
     "Represents a node in the derivation tree and stores all related information"
     
-    def __init__(self, in_name = "", in_position = math3D.zero3(), in_extents = math3D.zero3(), in_orientation = math3D.zeroQ(), in_parent = None, in_active = True, in_children = None, in_additive = True):
+    def __init__(self, in_name = "", in_position = math3D.zero3(), in_extents = math3D.zero3(), in_orientation = math3D.zeroQ(), in_parent = None, in_active = True, in_children = None, in_additive = True, in_orientation_mat = ()):
         #position of the centre of the node's shape
         self.position = in_position
         #radii of the extents of the node's shape
         self.extents = in_extents
         #the node's shape's orientation in 3D space
         self.orientation = in_orientation
+        #the node's orientation as a rot matrix. Only used for the reflection symmetry nodes. This is an ugly hack.
+        self.orientation_mat = in_orientation_mat
         #the name/type of the node
         self.name = in_name
         #pointer to parent node
@@ -45,17 +47,35 @@ class Node:
         if computer_readable:
             ret_string = ""
             #this is assumed to always be verbose
-            ret_string += "%s %s %s" % (self.name, self.active, self.additive)
+            ret_string += "name %s active %s additive %s" % (self.name, self.active, self.additive)
+            ret_string += " position "
             for i in self.position:
                 ret_string += " %s" % i
+            ret_string += " extents "
             for i in self.extents:
                 ret_string += " %s" % i
-            for i in self.orientation:
-                ret_string += " %s" % i
+            ret_string += " orientation "
+            #this is currently set to always output the orientation as a rotation matrix. The commented out code is for doing it as a matrix or quaternion,
+            #depending on whether orientation_mat has anything in it (empty implies that the quaternion should be used)
+            if len(self.orientation_mat) > 0:
+                for i in self.orientation_mat:
+                    ret_string += " %s" % i
+            else:
+                temp_mat = math3D.toMatrixQ(self.orientation)
+                for i in temp_mat:
+                    ret_string += " %s" % i
+            # if len(self.orientation_mat) > 0:
+            #     ret_string += "m "
+            #     for i in self.orientation_mat:
+            #         ret_string += " %s" % i
+            # else:
+            #     ret_string += "q "
+            #     for i in self.orientation:
+            #         ret_string += " %s" % i
             return ret_string
         else:
             if verbose:
-                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s | symmetry: %s | additive: %s" % (self.name, self.active, self.position, self.extents, self.orientation, self.symmetry_type, self.additive)
+                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s | symmetry: %s | additive: %s" % (self.name, self.active, self.position, self.extents, self.orientation_mat, self.symmetry_type, self.additive)
             else:
                 return "name: %s | active: %s | symmetry: %s" % (self.name, self.active, self.symmetry_type)
 
@@ -102,7 +122,7 @@ def handle_args(args):
     """this takes the raw input arguments and returns a dictionary of the option names mapped
     onto their values"""
     #dictionary containing default values
-    options = {"input_file" : None, "output_file" : None, "max_iterations" : -1, "parallel_execution" : False, "verbose" : False}
+    options = {"input_file" : None, "output_file" : None, "max_iterations" : -1, "parallel_execution" : False, "verbose" : False, "quiet" : False}
 
     #while args is non-empty
     while args:
@@ -125,6 +145,10 @@ def handle_args(args):
         #if this flag is used, then the program should produce verbose output
         elif args[0] == "-v":
             options["verbose"] = True
+            args = args[1:]
+        #if this flag is used, then the program shouldn't output the final machine readable code of the product.
+        elif args[0] == "-q":
+            options["quiet"] = True
             args = args[1:]
         else:
             print "unrecognized argument: %s" % args[0]
@@ -287,6 +311,17 @@ def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sy
     #return the list of reflections
     return ret
 
+def reflectVector(vector, plane_normal):
+    ret = math3D.sub3(\
+        vector,\
+        math3D.scale3(\
+            math3D.scale3(\
+                math3D.normalize3(plane_normal),\
+                2),\
+            math3D.dot3(\
+                vector,\
+                math3D.normalize3(plane_normal))))
+    return ret
 
 def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):
     """This method takes a subtree and some reflective symmetry parameters and returns a subtree
@@ -316,23 +351,37 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
 
         #mirror the orientation of the object. This can't be done with a rotation.
         #This should be done by storing a rotation matrix, not a quaternion and mirroring the individual vectors in it.
-        i.orientation = math3D.conjugateQ(i.orientation)
+        #I'm doing this by storing orientations as rotation matrices for reflection symmetry branches only.
+        #it's not a great solution, but it'll work for now.
 
-        rot_mat = math3D.toMatrixQ(i.orientation)
-        old_v1 = (rot_mat[0], rot_mat[4], rot_mat[8])
-        old_v2 = (rot_mat[1], rot_mat[5], rot_mat[9])
-        old_v3 = (rot_mat[2], rot_mat[6], rot_mat[10])
-        norm_sym_vect = math3D.normalize3(sym_vector)
-
-        for j in (old_v1, old_v2, old_v3):
-            dot_thing = math3D.dot3(j, norm_sym_vect) / math3D.dot3(norm_sym_vect, norm_sym_vect)
-            j = math3D.sub3(\
-                j,\
-                math3D.scale3(norm_sym_vect, 2 * dot_thing))
-
-        i.orientation = math3D.fromMatrixQ(old_v1[0], old_v1[1], old_v1[2], old_v2[0], old_v2[1], old_v2[2], old_v3[0], old_v3[1], old_v3[2])
-        #i.orientation = math3D.fromMatrixQ(old_v1[0], old_v2[0], old_v3[0], old_v1[1], old_v2[1], old_v3[1], old_v1[2], old_v2[2], old_v3[2])
-        #end of buggered up code that doesn't work.
+        #convert the quaternion into a rotation matrx
+        mat = math3D.toMatrixQ(i.orientation)
+        #print mat
+        #extract the axes from the rotation matrix
+        v1 = (mat[0], mat[4], mat[8])
+        v2 = (mat[1], mat[5], mat[9])
+        v3 = (mat[2], mat[6], mat[10])
+        # thing = [v1, v2, v3]
+        # #reflect the individual components
+        # for j in (v1,v2,v3):
+        #     print j
+        #     j = math3D.sub3(\
+        #         j,\
+        #         math3D.scale3(\
+        #             math3D.scale3(\
+        #                 math3D.normalize3(i.symmetry_vector),\
+        #                 2),\
+        #             math3D.dot3(\
+        #                 j,\
+        #                 math3D.normalize3(i.symmetry_vector))))
+        #     print j
+        #     print "\n"
+        v1 = reflectVector(v1, i.symmetry_vector)
+        v2 = reflectVector(v2, i.symmetry_vector)
+        v3 = reflectVector(v3, i.symmetry_vector)
+        #then put them back into the orientation_mat variable of the reflection
+        i.orientation_mat = (v1[0], v2[0], v3[0], 0.0, v1[1], v2[1], v3[1], 0.0, v1[2], v2[2], v3[2], 0.0, 0.0, 0.0, 0.0, 1.0)
+        #print i.orientation_mat
         
         #add i's children to the nodes list
         nodes.extend(i.children)
@@ -406,4 +455,5 @@ if __name__ == "__main__":
         print "===================FINAL RESULT===================\n"
         print result.displayTree(verbose=True)
 
-    print result.displayActiveNodes()
+    if not options["quiet"]:
+        print result.displayActiveNodes()
