@@ -101,7 +101,7 @@ class Node:
         #if the current node is active, then add it to the return string
         if self.active:
             ret += self.toString(True)
-            ret += " # "
+            ret += " # \n"
 
         #recurse on the children of this node
         for i in self.children:

@@ -11,7 +11,7 @@ axiom = Node("start")
 
 def start(parent):
     ret = Node("cube", in_position=(4.0, 4.0, 4.0), in_extents=(1,2,1), in_orientation=math3D.fromAngleAxisQ(math.pi / 4, 1,1,1))
-    ret.setSymmetry("reflective", (0,0,0), (1.0, 1.0, 1.0))
+    ret.setSymmetry("reflective", (0,0,0), (0.0, 1.0, 1.0))
     return [ret]
 
 def fcube(parent):
