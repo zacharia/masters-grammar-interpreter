@@ -3,15 +3,15 @@
 #takes a single argument, which is the parent node
 #defines a Node object with name axiom. This is the axiom of the grammar
 
-#axiom = Node("begin")
-axiom = Node("start")
+axiom = Node("begin")
+#axiom = Node("start")
 #axiom = Node("first")
 
 #=============================reflection stuff
 
 def start(parent):
-    ret = Node("cube", in_position=(4.0, 4.0, 4.0), in_extents=(1,2,1), in_orientation=math3D.fromAngleAxisQ(math.pi / 4, 1,1,1))
-    ret.setSymmetry("reflective", (0,0,0), (0.0, 1.0, 1.0))
+    ret = Node("rectangle", in_position=(40.0, 40.0, 40.0), in_extents=(10,20,10), in_orientation=math3D.fromAngleAxisQ(0, 1,1,1))
+    ret.setSymmetry("reflective", (70,70,70), (0.0, 1.0, 1.0))
     return [ret]
 
 def fcube(parent):
@@ -25,19 +25,10 @@ def two(parent):
 #===============================rotation stuff
 
 def begin(parent):
-    ret = Node("cylinder", in_position=(5.0, 0.0, 0.0), in_extents=(1.0, 1.0, 3.0), in_orientation=math3D.zeroQ())
-    #math3D.fromAngleAxisQ(90, 0,1,0)
-    ret.setSymmetry("rotational", math3D.zero3(), (0.0, 1.0, 0.0), 3)
-    return [ret]
+    ret = Node("cylinder", in_position=(50.0, 20, 50.0), in_extents=(10.0, 10.0, 10.0), in_orientation=math3D.zeroQ())
 
-def next(parent):
-    ret = Node("twosdfasdf")
-    
+    ret.setSymmetry("rotational", (50,60,50), (1, 0, 0), 5)
     return [ret]
-
-# def two(parent):
-#     ret = Node("two")
-#     return [ret]
 
 #=============================================
 

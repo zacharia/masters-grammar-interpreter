@@ -290,11 +290,16 @@ def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sy
         nodes.insert(0, i)
         for j in nodes:
             #update j's position by rotating it's position vector around the quaternion formed from the symmetry information
-            j.position = math3D.rotateVectorQ(\
+            temp_v = math3D.sub3(j.position, sym_point)
+            
+            
+            temp_v = math3D.rotateVectorQ(\
                 math3D.fromAngleAxisQ(\
                     ((math.pi * 2) / sym_num) * count,\
                     sym_vector[0], sym_vector[1], sym_vector[2]),\
-                j.position)
+                temp_v)
+
+            j.position = math3D.add3(temp_v, sym_point)
 
             #update j's orientation using quaternion slerping
             #do this by rotating the orientation of i by the axis angle quaternion formed from the symmetry_vector
