@@ -116,6 +116,17 @@ class Node:
         self.symmetry_point = point
         self.symmetry_vector = vector
 
+    def copy(self, copy_children = False):
+        ret = Node()
+        ret.name = copy.deepcopy(self.name)
+        
+        ret.position = copy.deepcopy(self.position)
+        ret.extents = copy.deepcopy(self.extents)
+        ret.orientation = copy.deepcopy(self.orientation)
+        
+        ret.additive = copy.deepcopy(self.additive)
+        return ret
+
 #==========================methods:
 
 def handle_args(args):
