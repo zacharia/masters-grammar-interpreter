@@ -1,0 +1,13 @@
+axiom = Node("s1")
+
+def s1(parent):
+    ret = Node("ellipsoid", (128,128,128), (64,10,64), math3D.zeroQ())
+    ret2 = Node("cylinder", (128,128,128), (50,20,50), math3D.zeroQ(), in_additive=False)
+    spire = Node("ellipsoid", (64,128,128), (16,32,16), math3D.zeroQ())
+    spire.setSymmetry("rotational", (128,128,128), (0, 1, 0), 5)
+    return [ret, ret2, spire]
+
+def spire(parent):
+    ret = parent.copy()
+    ret.name = "ellipsoid"
+    return [ret]

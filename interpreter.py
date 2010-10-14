@@ -346,24 +346,24 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
     ret = copy.deepcopy(root)
 
     #do an iterative walk of the tree (breadth first walk), updating the nodes as we walk through them
-    nodes = copy.copy(ret.children)
+    nodes = []#copy.copy(ret.children)
     #add root to the front of the list
-    nodes.insert(0, root)
+    nodes.insert(0, ret)
     for i in nodes:
         #update i
-
+        
         #the formula that this code does was provided by julian. It's apparently a generalized reflection equation.
         #this does the change in position.
-        v = math3D.sub3(i.position, i.symmetry_point)
+        v = math3D.sub3(i.position, sym_point)
         i.position = math3D.sub3(\
             i.position,\
             math3D.scale3(\
                 math3D.scale3(\
-                    math3D.normalize3(i.symmetry_vector),\
+                    math3D.normalize3(sym_vector),\
                     2),\
                 math3D.dot3(\
                     v,\
-                    math3D.normalize3(i.symmetry_vector))))
+                    math3D.normalize3(sym_vector))))
 
         #mirror the orientation of the object. This can't be done with a rotation.
         #This should be done by storing a rotation matrix, not a quaternion and mirroring the individual vectors in it.
@@ -385,16 +385,16 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
         #         j,\
         #         math3D.scale3(\
         #             math3D.scale3(\
-        #                 math3D.normalize3(i.symmetry_vector),\
+        #                 math3D.normalize3(sym_vector),\
         #                 2),\
         #             math3D.dot3(\
         #                 j,\
-        #                 math3D.normalize3(i.symmetry_vector))))
+        #                 math3D.normalize3(sym_vector))))
         #     print j
         #     print "\n"
-        v1 = reflectVector(v1, i.symmetry_vector)
-        v2 = reflectVector(v2, i.symmetry_vector)
-        v3 = reflectVector(v3, i.symmetry_vector)
+        v1 = reflectVector(v1, sym_vector)
+        v2 = reflectVector(v2, sym_vector)
+        v3 = reflectVector(v3, sym_vector)
         #then put them back into the orientation_mat variable of the reflection
         i.orientation_mat = (v1[0], v2[0], v3[0], 0.0, v1[1], v2[1], v3[1], 0.0, v1[2], v2[2], v3[2], 0.0, 0.0, 0.0, 0.0, 1.0)
         #print i.orientation_mat
@@ -426,7 +426,8 @@ def doSymmetry(root):
         root.children.extend(makeRotationalSymmetryCopy(root, root.symmetry_num, root.symmetry_point, root.symmetry_vector))
     elif root.symmetry_type == "reflective":
         #return makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector)
-         root.children.insert(0, makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector))
+        #root.children.insert(0, makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector))
+        root.children.insert(0, makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector))
     #if it's not symmetric, then do nothing.
     #else:
         #return None
