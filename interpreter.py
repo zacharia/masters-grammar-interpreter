@@ -346,7 +346,7 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
     ret = copy.deepcopy(root)
 
     #do an iterative walk of the tree (breadth first walk), updating the nodes as we walk through them
-    nodes = []#copy.copy(ret.children)
+    nodes = []
     #add root to the front of the list
     nodes.insert(0, ret)
     for i in nodes:

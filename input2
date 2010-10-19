@@ -1,4 +1,5 @@
 axiom = Node("s1")
+#axiom = Node("block")
 
 def s1(parent):
     ret = Node("ellipsoid", (128,128,128), (64,10,64), math3D.zeroQ())
@@ -10,4 +11,10 @@ def s1(parent):
 def spire(parent):
     ret = parent.copy()
     ret.name = "ellipsoid"
+    return [ret]
+
+#-------------------------------------------------------------
+
+def block(parent):
+    ret = Node("rectangle", (64,64,64), (32,32,32), math3D.zeroQ())
     return [ret]
