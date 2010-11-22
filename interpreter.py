@@ -286,59 +286,60 @@ def deriveTree(axiom, options):
     return axiom
 
 
+#This does a recursive depth first walk of the tree rooted at the argument 'node' and updates all of it's children
+# to their correct symmetrical positions based on the other arguments.
+def updateRotationalSymmetryCopy(node, count, sym_num = 2, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):    
+    #recurse on the children
+    for i in node.children:
+        updateRotationalSymmetryCopy(i, count, sym_num, sym_point, sym_vector)
+
+    #update the current node's position
+    temp_v = math3D.sub3(node.position, sym_point)
+    
+    temp_v = math3D.rotateVectorQ(\
+        math3D.fromAngleAxisQ(\
+            ((math.pi * 2) / sym_num) * count,\
+                sym_vector[0], sym_vector[1], sym_vector[2]),\
+            temp_v)
+
+    node.position = math3D.add3(temp_v, sym_point)
+
+    #reset orientation_mat, in case it's non-empty for some reason
+    #this fixes the bug I was having where rotational symmetry copies of reflected things had their orientations reset.
+    node.orientation_mat = ()
+    
+    #update in's orientation using quaternion slerping
+    #do this by rotating the orientation of i by the axis angle quaternion formed from the symmetry_vector
+    #and the appropriate angle.
+    node.orientation = math3D.multiplyQ(\
+        math3D.fromAngleAxisQ(\
+            ((math.pi * 2) / sym_num) * count,\
+                sym_vector[0], sym_vector[1], sym_vector[2]),\
+            node.orientation)
+    
+        
 def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):
     """This method takes a subtree and rotational symmetry parameters and returns a list of subtrees that
     represent the rotational reflections of the input subtree."""
     #make a working copy of the node for each reflection we need to make
     ret = [ copy.deepcopy(root) for i in range(sym_num-1) ]
 
+    #this acts as a counter of which symmetric copy we're one
     count = 0
+
+    #loop through all of the copies
     for i in ret:
+        #update our counter
         count += 1
-        #do an iterative walk of the tree (breadth first walk), updating the nodes as we walk through them
-        nodes = copy.copy(i.children)
-        #add root to the front of the list
-        nodes.insert(0, i)
-        for j in nodes:
-            #update j's position by rotating it's position vector around the quaternion formed from the symmetry information
-            temp_v = math3D.sub3(j.position, sym_point)
+
+        #call the method to update each copy to it's correct position, and give it the necessary arguments
+        updateRotationalSymmetryCopy(i, count, sym_num, sym_point, sym_vector)
             
-            temp_v = math3D.rotateVectorQ(\
-                math3D.fromAngleAxisQ(\
-                    ((math.pi * 2) / sym_num) * count,\
-                    sym_vector[0], sym_vector[1], sym_vector[2]),\
-                temp_v)
-
-            j.position = math3D.add3(temp_v, sym_point)
-
-            if j.name == "rectangle" and -16.5 < j.position[1] < -15.0:
-                print count
-                print "position: "
-                print j.position #TEMP
-                print "original orientation:"
-                print math3D.toMatrixQ(j.orientation) # TEMP
-
-            #update j's orientation using quaternion slerping
-            #do this by rotating the orientation of i by the axis angle quaternion formed from the symmetry_vector
-            #and the appropriate angle.
-            j.orientation = math3D.multiplyQ(\
-                math3D.fromAngleAxisQ(\
-                    ((math.pi * 2) / sym_num) * count,\
-                    sym_vector[0], sym_vector[1], sym_vector[2]),\
-                j.orientation)
-
-            if j.name == "rectangle" and -16.5 < j.position[1] < -15.0:
-                print count
-                print "updated orientation:"
-                print math3D.toMatrixQ(j.orientation) #TEMP
-                print "\n"
-
-            #add j's children to the nodes list
-            nodes.extend(j.children)
-    
     #return the list of reflections
     return ret
 
+
+#this method just reflects a vector about a plane with normal given be plane_normal
 def reflectVector(vector, plane_normal):
     ret = math3D.sub3(\
         vector,\
@@ -350,6 +351,7 @@ def reflectVector(vector, plane_normal):
                 vector,\
                 math3D.normalize3(plane_normal))))
     return ret
+
 
 def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):
     """This method takes a subtree and some reflective symmetry parameters and returns a subtree
@@ -384,33 +386,18 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
 
         #convert the quaternion into a rotation matrx
         mat = math3D.toMatrixQ(i.orientation)
-        #print mat
+        
         #extract the axes from the rotation matrix
         v1 = (mat[0], mat[4], mat[8])
         v2 = (mat[1], mat[5], mat[9])
         v3 = (mat[2], mat[6], mat[10])
-        # thing = [v1, v2, v3]
-        # #reflect the individual components
-        # for j in (v1,v2,v3):
-        #     print j
-        #     j = math3D.sub3(\
-        #         j,\
-        #         math3D.scale3(\
-        #             math3D.scale3(\
-        #                 math3D.normalize3(sym_vector),\
-        #                 2),\
-        #             math3D.dot3(\
-        #                 j,\
-        #                 math3D.normalize3(sym_vector))))
-        #     print j
-        #     print "\n"
+        
         v1 = reflectVector(v1, sym_vector)
         v2 = reflectVector(v2, sym_vector)
         v3 = reflectVector(v3, sym_vector)
         #then put them back into the orientation_mat variable of the reflection
         i.orientation_mat = (v1[0], v2[0], v3[0], 0.0, v1[1], v2[1], v3[1], 0.0, v1[2], v2[2], v3[2], 0.0, 0.0, 0.0, 0.0, 1.0)
-        #print i.orientation_mat
-        
+                
         #add i's children to the nodes list
         nodes.extend(i.children)
     
@@ -430,7 +417,7 @@ def doSymmetry(root):
         
     #if the current node is symmetric, then create the relfection(s) of it and return it/them
     if root.symmetry_type == "rotational":        
-        root.children.extend(makeRotationalSymmetryCopy(root, root.symmetry_num, root.symmetry_point, root.symmetry_vector))
+        root.children.extend(makeRotationalSymmetryCopy(root, root.symmetry_num, root.symmetry_point, root.symmetry_vector))        
     elif root.symmetry_type == "reflective":
         root.children.insert(0, makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector))
     #if it's not symmetric, then do nothing.
@@ -467,11 +454,11 @@ if __name__ == "__main__":
         print "AXIOM:\n" + axiom.displayTree()
 
     result = deriveTree(axiom, options)
-
+    
     if options["verbose"]:
         print "Creating symmetry branches."
     doSymmetry(result)
-
+    
     if options["verbose"]:
         print "===================FINAL RESULT===================\n"
         print result.displayTree(verbose=True)
