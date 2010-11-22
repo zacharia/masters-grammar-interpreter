@@ -127,7 +127,7 @@ class Node:
         ret.additive = copy.deepcopy(self.additive)
         return ret
 
-#==========================methods:
+#==========================methods
 
 def handle_args(args):
     """this takes the raw input arguments and returns a dictionary of the option names mapped
@@ -303,7 +303,6 @@ def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sy
             #update j's position by rotating it's position vector around the quaternion formed from the symmetry information
             temp_v = math3D.sub3(j.position, sym_point)
             
-            
             temp_v = math3D.rotateVectorQ(\
                 math3D.fromAngleAxisQ(\
                     ((math.pi * 2) / sym_num) * count,\
@@ -311,6 +310,13 @@ def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sy
                 temp_v)
 
             j.position = math3D.add3(temp_v, sym_point)
+
+            if j.name == "rectangle" and -16.5 < j.position[1] < -15.0:
+                print count
+                print "position: "
+                print j.position #TEMP
+                print "original orientation:"
+                print math3D.toMatrixQ(j.orientation) # TEMP
 
             #update j's orientation using quaternion slerping
             #do this by rotating the orientation of i by the axis angle quaternion formed from the symmetry_vector
@@ -320,6 +326,12 @@ def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sy
                     ((math.pi * 2) / sym_num) * count,\
                     sym_vector[0], sym_vector[1], sym_vector[2]),\
                 j.orientation)
+
+            if j.name == "rectangle" and -16.5 < j.position[1] < -15.0:
+                print count
+                print "updated orientation:"
+                print math3D.toMatrixQ(j.orientation) #TEMP
+                print "\n"
 
             #add j's children to the nodes list
             nodes.extend(j.children)
@@ -413,26 +425,18 @@ def doSymmetry(root):
 
     #loop through the children of the node
     for i in root.children:
-        #recurse on the children and store the returned value
-        doSymmetry(i)#ans = doSymmetry(i)
-        #if something other than None is returned, then it's a symmetric reflection(s) of the child.
-        #if ans != None:
-            #add the reflection(s) to the node's children
-            #root.children.insert(0,ans)
-
+        #recurse on the children (depth-first walk)
+        doSymmetry(i)
+        
     #if the current node is symmetric, then create the relfection(s) of it and return it/them
-    if root.symmetry_type == "rotational":
-        #return makeRotationalSymmetryCopy(root, root.symmetry_num, root.symmetry_point, root.symmetry_vector)
+    if root.symmetry_type == "rotational":        
         root.children.extend(makeRotationalSymmetryCopy(root, root.symmetry_num, root.symmetry_point, root.symmetry_vector))
     elif root.symmetry_type == "reflective":
-        #return makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector)
-        #root.children.insert(0, makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector))
         root.children.insert(0, makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector))
     #if it's not symmetric, then do nothing.
-    #else:
-        #return None
+    
 
-#===========================main code:
+#===========================main code
 
 #The file that gets read in and exec'd needs to define a Node object called 'axiom', which is the
 #starting symbol, and a method per grammar rule with the same name as the LHS of the rule.
