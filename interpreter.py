@@ -127,6 +127,25 @@ class Node:
         ret.additive = copy.deepcopy(self.additive)
         return ret
 
+    #this method splits a node up along on of it's axes.
+    #if in_place is true, the current node is made inactive and the resultant splits are added to it as children
+    #otherwise, the node is deactivated, and the splitted nodes are returned.
+    def splitNode(axis = "x", num_splits = 2, in_place = True):
+        #make a list containing the splits, initially as copies of the current node
+        ret = [self.copy() for i in range(num_splits)]
+
+        #loop through ret and update the elements as appropriate
+        for i in ret:
+            pass
+
+        #deactivate the current node
+        self.active = False
+        #either return the splits or append, depending on the argument in_place
+        if in_place:
+            self.children.extend(ret)
+        else:
+            return ret
+
 #==========================methods
 
 def handle_args(args):
