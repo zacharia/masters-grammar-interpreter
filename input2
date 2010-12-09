@@ -330,6 +330,7 @@ def tie_fighter(parent):
 
     wing = Node("tf_wing", (50,0,0), (10,20,10), math3D.fromAngleAxisQ(math.pi / 2.0, 0,0,1))
     wing.setSymmetry("rotational", (0,0,0), (0,0,1), 2)
+    #wing.setSymmetry("reflective", (0,0,0), (1,0,0))
 
     return [body, wing]
 
@@ -358,8 +359,10 @@ def tf_wing_fin(parent):
     sub_wing.orientation = math3D.multiplyQ(sub_wing.orientation, math3D.fromAngleAxisQ(-math.pi / 6, 1,0,0))
     sub_wing.setSymmetry("reflective", parent.position, (0,1,0))
 
-    #node = Node()
-    #node.children.insert(0,sub_wing)
-    #node.setSymmetry("reflective", parent.position, (0,0,1))
+    node = Node()
+    node.children.insert(0,sub_wing)
+    node.setSymmetry("reflective", parent.position, (0,0,1))
+
+    fin.children.insert(0,node)
             
-    return [fin, sub_wing] #node]
+    return [fin]

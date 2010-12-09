@@ -404,7 +404,10 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
         #it's not a great solution, but it'll work for now.
 
         #convert the quaternion into a rotation matrx
-        mat = math3D.toMatrixQ(i.orientation)
+        if len(i.orientation_mat) == 0:
+            mat = math3D.toMatrixQ(i.orientation)
+        else:
+            mat = i.orientation_mat
         
         #extract the axes from the rotation matrix
         v1 = (mat[0], mat[4], mat[8])
