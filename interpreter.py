@@ -2,7 +2,8 @@
 
 #==========================import stuff
 import sys
-import math3D
+#import math3D
+from cgkit.cgtypes import *
 import copy
 import math
 
@@ -11,15 +12,13 @@ import math
 class Node:
     "Represents a node in the derivation tree and stores all related information"
     
-    def __init__(self, in_name = "", in_position = math3D.zero3(), in_extents = math3D.zero3(), in_orientation = math3D.zeroQ(), in_parent = None, in_active = True, in_children = None, in_additive = True, in_orientation_mat = ()):
+    def __init__(self, in_name = "", in_position = vec3(), in_extents = vec3(), in_orientation = mat3(1.0), in_parent = None, in_active = True, in_children = None, in_additive = True):
         #position of the centre of the node's shape
         self.position = in_position
         #radii of the extents of the node's shape
         self.extents = in_extents
         #the node's shape's orientation in 3D space
-        self.orientation = in_orientation
-        #the node's orientation as a rot matrix. Only used for the reflection symmetry nodes. This is an ugly hack.
-        self.orientation_mat = in_orientation_mat
+        self.orientation = in_orientation        
         #the name/type of the node
         self.name = in_name
         #pointer to parent node
@@ -37,8 +36,8 @@ class Node:
         #the stuff for symmetry
         self.symmetry_type = "None" #can be rotation or reflection
         self.symmetry_num = 1 #this is how many times to repeat the thing in the 360 degrees for rotational symmetry
-        self.symmetry_point = math3D.zero3()
-        self.symmetry_vector = math3D.zero3()
+        self.symmetry_point = vec3()
+        self.symmetry_vector = vec3()
 
     def toString(self, computer_readable = False, verbose = True):
         """This method returns a string representation of the current node, if verbose is true, all
@@ -57,25 +56,16 @@ class Node:
             ret_string += " orientation "
             #this is currently set to always output the orientation as a rotation matrix. The commented out code is for doing it as a matrix or quaternion,
             #depending on whether orientation_mat has anything in it (empty implies that the quaternion should be used)
-            if len(self.orientation_mat) > 0:
-                for i in self.orientation_mat:
-                    ret_string += " %s" % i
-            else:
-                temp_mat = math3D.toMatrixQ(self.orientation)
-                for i in temp_mat:
-                    ret_string += " %s" % i
-            # if len(self.orientation_mat) > 0:
-            #     ret_string += "m "
-            #     for i in self.orientation_mat:
-            #         ret_string += " %s" % i
-            # else:
-            #     ret_string += "q "
-            #     for i in self.orientation:
-            #         ret_string += " %s" % i
+            for i in self.orientation.toList():
+                ret_string += " %s" % i
+            #old code:
+            #for i in self.orientation:
+            #    ret_string += " %s" % i
+            
             return ret_string
         else:
             if verbose:
-                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s | symmetry: %s | additive: %s" % (self.name, self.active, self.position, self.extents, self.orientation_mat, self.symmetry_type, self.additive)
+                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s | symmetry: %s | additive: %s" % (self.name, self.active, self.position, self.extents, self.orientation.toList(), self.symmetry_type, self.additive)
             else:
                 return "name: %s | active: %s | symmetry: %s" % (self.name, self.active, self.symmetry_type)
 
@@ -110,7 +100,7 @@ class Node:
         #return the final string that we produce.
         return ret
 
-    def setSymmetry(self, sym_type = "rotational", point = math3D.zero3(), vector = math3D.zero3(), num = 2):
+    def setSymmetry(self, sym_type = "rotational", point = vec3(), vector = vec3(0,0,1), num = 2):
         self.symmetry_type = sym_type
         self.symmetry_num = num
         self.symmetry_point = point
@@ -200,7 +190,7 @@ def get_input(infile):
     
     #this does an eval of everything in code and puts it into the global symbol table thing
     exec code in globals()
-
+    
     
 def hasNonTerminals(root):
     """This method determines whether there are any non-terminals nodes left in the derivation tree
@@ -307,37 +297,41 @@ def deriveTree(axiom, options):
 
 #This does a recursive depth first walk of the tree rooted at the argument 'node' and updates all of it's children
 # to their correct symmetrical positions based on the other arguments.
-def updateRotationalSymmetryCopy(node, count, sym_num = 2, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):    
+def updateRotationalSymmetryCopy(node, count, sym_num = 2, sym_point = vec3(), sym_vector = vec3(0,0,1)):
     #recurse on the children
     for i in node.children:
         updateRotationalSymmetryCopy(i, count, sym_num, sym_point, sym_vector)
 
     #update the current node's position
-    temp_v = math3D.sub3(node.position, sym_point)
-    
-    temp_v = math3D.rotateVectorQ(\
-        math3D.fromAngleAxisQ(\
-            ((math.pi * 2) / sym_num) * count,\
-                sym_vector[0], sym_vector[1], sym_vector[2]),\
-            temp_v)
+    temp_v = node.position - sym_point
 
-    node.position = math3D.add3(temp_v, sym_point)
+    rot_quat = quat(((math.pi * 2) / sym_num) * count, sym_vector)
+    temp_v = rot_quat.rotateVec(temp_v)
 
-    #reset orientation_mat, in case it's non-empty for some reason
-    #this fixes the bug I was having where rotational symmetry copies of reflected things had their orientations reset.
-    node.orientation_mat = ()
-    
+    #old code:
+    # temp_v = math3D.rotateVectorQ(\
+    #     math3D.fromAngleAxisQ(\
+    #         ((math.pi * 2) / sym_num) * count,\
+    #             sym_vector[0], sym_vector[1], sym_vector[2]),\
+    #         temp_v)
+
+    node.position = temp_v + sym_point
+        
     #update in's orientation using quaternion slerping
     #do this by rotating the orientation of i by the axis angle quaternion formed from the symmetry_vector
     #and the appropriate angle.
-    node.orientation = math3D.multiplyQ(\
-        math3D.fromAngleAxisQ(\
-            ((math.pi * 2) / sym_num) * count,\
-                sym_vector[0], sym_vector[1], sym_vector[2]),\
-            node.orientation)
+
+    node.orientation = node.orientation.rotate(((math.pi * 2) / sym_num) * count, sym_vector)
+    
+    #old code:
+    # node.orientation = math3D.multiplyQ(\
+    #     math3D.fromAngleAxisQ(\
+    #         ((math.pi * 2) / sym_num) * count,\
+    #             sym_vector[0], sym_vector[1], sym_vector[2]),\
+    #         node.orientation)
     
         
-def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):
+def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = vec3(), sym_vector = vec3(0,0,1)):
     """This method takes a subtree and rotational symmetry parameters and returns a list of subtrees that
     represent the rotational reflections of the input subtree."""
     #make a working copy of the node for each reflection we need to make
@@ -360,19 +354,22 @@ def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = math3D.zero3(), sy
 
 #this method just reflects a vector about a plane with normal given be plane_normal
 def reflectVector(vector, plane_normal):
-    ret = math3D.sub3(\
-        vector,\
-        math3D.scale3(\
-            math3D.scale3(\
-                math3D.normalize3(plane_normal),\
-                2),\
-            math3D.dot3(\
-                vector,\
-                math3D.normalize3(plane_normal))))
+    ret = vector - ((2 * plane_normal.normalize()) * (vector * plane_normal.normalize()))
+
+    #old code:
+    # ret = math3D.sub3(\
+    #     vector,\
+    #     math3D.scale3(\
+    #         math3D.scale3(\
+    #             math3D.normalize3(plane_normal),\
+    #             2),\
+    #         math3D.dot3(\
+    #             vector,\
+    #             math3D.normalize3(plane_normal))))
     return ret
 
 
-def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = math3D.zero3()):
+def makeReflectiveSymmetryCopy(root, sym_point = vec3(), sym_vector = vec3(0,0,1)):
     """This method takes a subtree and some reflective symmetry parameters and returns a subtree
     that is the reflective rotation of the original subtree."""
     #make a working copy of the subtree to reflect. This will be transformed into the relfection
@@ -387,16 +384,19 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
         
         #the formula that this code does was provided by julian. It's apparently a generalized reflection equation.
         #this does the change in position.
-        v = math3D.sub3(i.position, sym_point)
-        i.position = math3D.sub3(\
-            i.position,\
-            math3D.scale3(\
-                math3D.scale3(\
-                    math3D.normalize3(sym_vector),\
-                    2),\
-                math3D.dot3(\
-                    v,\
-                    math3D.normalize3(sym_vector))))
+        v = i.position - sym_point
+
+        i.position = i.position - ((2 * sym_vector.normalize()) * (v * sym_vector.normalize()))
+        #old code:
+        # i.position = math3D.sub3(\
+        #     i.position,\
+        #     math3D.scale3(\
+        #         math3D.scale3(\
+        #             math3D.normalize3(sym_vector),\
+        #             2),\
+        #         math3D.dot3(\
+        #             v,\
+        #             math3D.normalize3(sym_vector))))
 
         #mirror the orientation of the object. This can't be done with a rotation.
         #This should be done by storing a rotation matrix, not a quaternion and mirroring the individual vectors in it.
@@ -404,21 +404,24 @@ def makeReflectiveSymmetryCopy(root, sym_point = math3D.zero3(), sym_vector = ma
         #it's not a great solution, but it'll work for now.
 
         #convert the quaternion into a rotation matrx
-        if len(i.orientation_mat) == 0:
-            mat = math3D.toMatrixQ(i.orientation)
-        else:
-            mat = i.orientation_mat
+        # if len(i.orientation_mat) == 0:
+        #     mat = math3D.toMatrixQ(i.orientation)
+        # else:
+        #     mat = i.orientation_mat
         
         #extract the axes from the rotation matrix
-        v1 = (mat[0], mat[4], mat[8])
-        v2 = (mat[1], mat[5], mat[9])
-        v3 = (mat[2], mat[6], mat[10])
+        v1 = i.orientation.getColumn(0) #(mat[0], mat[4], mat[8])
+        v2 = i.orientation.getColumn(1) #(mat[1], mat[5], mat[9])
+        v3 = i.orientation.getColumn(2) #(mat[2], mat[6], mat[10])
         
         v1 = reflectVector(v1, sym_vector)
         v2 = reflectVector(v2, sym_vector)
         v3 = reflectVector(v3, sym_vector)
         #then put them back into the orientation_mat variable of the reflection
-        i.orientation_mat = (v1[0], v2[0], v3[0], 0.0, v1[1], v2[1], v3[1], 0.0, v1[2], v2[2], v3[2], 0.0, 0.0, 0.0, 0.0, 1.0)
+        i.orientation.setColumn(0, v1)
+        i.orientation.setColumn(1, v2)
+        i.orientation.setColumn(2, v3)
+        #i.orientation_mat = (v1[0], v2[0], v3[0], 0.0, v1[1], v2[1], v3[1], 0.0, v1[2], v2[2], v3[2], 0.0, 0.0, 0.0, 0.0, 1.0)
                 
         #add i's children to the nodes list
         nodes.extend(i.children)
