@@ -3,7 +3,7 @@
 #takes a single argument, which is the parent node
 #defines a Node object with name axiom. This is the axiom of the grammar
 
-#axiom = Node("squid_ship") #10 iterations works nicely
+axiom = Node("squid_ship") #10 iterations works nicely
 #axiom = Node("borg_cube")
 
 #=============================reflection stuff
@@ -25,21 +25,21 @@ def main_cube(parent):
 
 def squid_ship(parent):
     parent.active = False
-    ret = Node("cylinder", in_position= vec3(50.0, 50, 50.0), in_extents= vec3(10.0, 10.0, 10.0), in_orientation = mat3.rotation(math.pi / 2, 0,0,1))
+    ret = Node("cylinder", in_position= vec3(50.0, 50, 50.0), in_extents= vec3(10.0, 10.0, 10.0), in_orientation = mat3.rotation(math.pi / 2, vec3(0,0,1)))
     ret.setSymmetry("rotational", vec3(50,60,50), vec3(1, 0, 0), 5)
     parent.active = False
 
-    ret2 = Node("ellipsoid", vec3(40, 60, 50), vec3(20, 10, 10), mat3.rotation(math.pi / 2, 0,0,1))
+    ret2 = Node("ellipsoid", vec3(40, 60, 50), vec3(20, 10, 10), mat3.rotation(math.pi / 2, vec3(0,0,1)))
 
-    ret3 = Node("cylinder", vec3(60, 60, 50), vec3(10, 30, 10), mat3.rotation(math.pi / 2, 0,0,1), in_additive=False)    
+    ret3 = Node("cylinder", vec3(60, 60, 50), vec3(10, 30, 10), mat3.rotation(math.pi / 2, vec3(0,0,1)), in_additive=False)    
     return [ret, ret2, ret3]
 
 
 def cylinder(parent):
     ret = Node("cylinder", in_position = parent.position, in_extents = parent.extents, in_orientation = parent.orientation)
-    ret.position = ret.position + vec3(ret.extents[0], ret.extents[1], 0))
+    ret.position = ret.position + vec3(ret.extents[0], ret.extents[1], 0)
     ret.extents = ret.extents * 0.9
-    ret.orientation = ret.orientation.rotate(math.pi / 10, 0,0,1)
+    ret.orientation = ret.orientation * mat3.rotation(-math.pi / 10, vec3(0,0,1))
     
     return [ret]
 

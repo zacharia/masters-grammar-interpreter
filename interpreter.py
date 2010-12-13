@@ -321,7 +321,7 @@ def updateRotationalSymmetryCopy(node, count, sym_num = 2, sym_point = vec3(), s
     #do this by rotating the orientation of i by the axis angle quaternion formed from the symmetry_vector
     #and the appropriate angle.
 
-    node.orientation = node.orientation.rotate(((math.pi * 2) / sym_num) * count, sym_vector)
+    node.orientation = node.orientation.rotate(((-math.pi * 2) / sym_num) * count, sym_vector)
     
     #old code:
     # node.orientation = math3D.multiplyQ(\
@@ -385,44 +385,27 @@ def makeReflectiveSymmetryCopy(root, sym_point = vec3(), sym_vector = vec3(0,0,1
         #the formula that this code does was provided by julian. It's apparently a generalized reflection equation.
         #this does the change in position.
         v = i.position - sym_point
-
         i.position = i.position - ((2 * sym_vector.normalize()) * (v * sym_vector.normalize()))
-        #old code:
-        # i.position = math3D.sub3(\
-        #     i.position,\
-        #     math3D.scale3(\
-        #         math3D.scale3(\
-        #             math3D.normalize3(sym_vector),\
-        #             2),\
-        #         math3D.dot3(\
-        #             v,\
-        #             math3D.normalize3(sym_vector))))
-
-        #mirror the orientation of the object. This can't be done with a rotation.
-        #This should be done by storing a rotation matrix, not a quaternion and mirroring the individual vectors in it.
-        #I'm doing this by storing orientations as rotation matrices for reflection symmetry branches only.
-        #it's not a great solution, but it'll work for now.
-
-        #convert the quaternion into a rotation matrx
-        # if len(i.orientation_mat) == 0:
-        #     mat = math3D.toMatrixQ(i.orientation)
-        # else:
-        #     mat = i.orientation_mat
         
-        #extract the axes from the rotation matrix
-        v1 = i.orientation.getColumn(0) #(mat[0], mat[4], mat[8])
-        v2 = i.orientation.getColumn(1) #(mat[1], mat[5], mat[9])
-        v3 = i.orientation.getColumn(2) #(mat[2], mat[6], mat[10])
-        
+        #mirror the orientation of the object by reflecting each of the columns of the matrix about the reflection plane.        
+        #first extract the axes from the rotation matrix
+        v1 = i.orientation.getColumn(0)
+        v2 = i.orientation.getColumn(1)
+        v3 = i.orientation.getColumn(2)
+        #then reflect them
+        if i.name == "rectangle":
+            print v1, v2, v3
+            print "reflected by ", sym_vector
         v1 = reflectVector(v1, sym_vector)
         v2 = reflectVector(v2, sym_vector)
         v3 = reflectVector(v3, sym_vector)
+        if i.name == "rectangle":
+            print v1, v2, v3
         #then put them back into the orientation_mat variable of the reflection
         i.orientation.setColumn(0, v1)
         i.orientation.setColumn(1, v2)
         i.orientation.setColumn(2, v3)
-        #i.orientation_mat = (v1[0], v2[0], v3[0], 0.0, v1[1], v2[1], v3[1], 0.0, v1[2], v2[2], v3[2], 0.0, 0.0, 0.0, 0.0, 1.0)
-                
+                        
         #add i's children to the nodes list
         nodes.extend(i.children)
     
