@@ -58,9 +58,6 @@ class Node:
             #depending on whether orientation_mat has anything in it (empty implies that the quaternion should be used)
             for i in self.orientation.toList():
                 ret_string += " %s" % i
-            #old code:
-            #for i in self.orientation:
-            #    ret_string += " %s" % i
             
             return ret_string
         else:
@@ -213,8 +210,6 @@ def continueDerivation(root, iterations, maxIterations):
     """Determines whether derivation should continue or not. Checks if non-terminals are present,
     and whether the max number of iterations has been reached."""
 
-    #print "its: %s / %s" % (iterations, maxIterations)
-
     #if the number of iterations is capped and we've hit that cap, then stop derivation
     if maxIterations < 0:
         underMaxIterations = True
@@ -244,7 +239,6 @@ def doParallelIteration(root):
             rule_method = globals()[root.name]
             #then execute the rule on the current node and add the result as a child
             root.children.extend( rule_method(root) )
-            #root.active = False
     
 
 def doSerialIteration(root):
@@ -260,7 +254,6 @@ def doSerialIteration(root):
             rule_method = globals()[i.name]
             #then execute the rule on the current node and add the result as a child
             i.children.extend( rule_method(root) )
-            #i.active = False
             #we're only doing one derivation per iteration, so we can quit after doing one.
             return
         #if the current node is not eligible to derive
@@ -308,13 +301,6 @@ def updateRotationalSymmetryCopy(node, count, sym_num = 2, sym_point = vec3(), s
     rot_quat = quat(((math.pi * 2) / sym_num) * count, sym_vector)
     temp_v = rot_quat.rotateVec(temp_v)
 
-    #old code:
-    # temp_v = math3D.rotateVectorQ(\
-    #     math3D.fromAngleAxisQ(\
-    #         ((math.pi * 2) / sym_num) * count,\
-    #             sym_vector[0], sym_vector[1], sym_vector[2]),\
-    #         temp_v)
-
     node.position = temp_v + sym_point
         
     #update in's orientation using quaternion slerping
@@ -322,13 +308,6 @@ def updateRotationalSymmetryCopy(node, count, sym_num = 2, sym_point = vec3(), s
     #and the appropriate angle.
 
     node.orientation = node.orientation.rotate(((-math.pi * 2) / sym_num) * count, sym_vector)
-    
-    #old code:
-    # node.orientation = math3D.multiplyQ(\
-    #     math3D.fromAngleAxisQ(\
-    #         ((math.pi * 2) / sym_num) * count,\
-    #             sym_vector[0], sym_vector[1], sym_vector[2]),\
-    #         node.orientation)
     
         
 def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = vec3(), sym_vector = vec3(0,0,1)):
@@ -356,16 +335,6 @@ def makeRotationalSymmetryCopy(root, sym_num = 2, sym_point = vec3(), sym_vector
 def reflectVector(vector, plane_normal):
     ret = vector - ((2 * plane_normal.normalize()) * (vector * plane_normal.normalize()))
 
-    #old code:
-    # ret = math3D.sub3(\
-    #     vector,\
-    #     math3D.scale3(\
-    #         math3D.scale3(\
-    #             math3D.normalize3(plane_normal),\
-    #             2),\
-    #         math3D.dot3(\
-    #             vector,\
-    #             math3D.normalize3(plane_normal))))
     return ret
 
 
@@ -389,22 +358,17 @@ def makeReflectiveSymmetryCopy(root, sym_point = vec3(), sym_vector = vec3(0,0,1
         
         #mirror the orientation of the object by reflecting each of the columns of the matrix about the reflection plane.        
         #first extract the axes from the rotation matrix
-        v1 = i.orientation.getColumn(0)
-        v2 = i.orientation.getColumn(1)
-        v3 = i.orientation.getColumn(2)
+        v1 = i.orientation.getRow(0)
+        v2 = i.orientation.getRow(1)
+        v3 = i.orientation.getRow(2)
         #then reflect them
-        if i.name == "rectangle":
-            print v1, v2, v3
-            print "reflected by ", sym_vector
         v1 = reflectVector(v1, sym_vector)
         v2 = reflectVector(v2, sym_vector)
         v3 = reflectVector(v3, sym_vector)
-        if i.name == "rectangle":
-            print v1, v2, v3
         #then put them back into the orientation_mat variable of the reflection
-        i.orientation.setColumn(0, v1)
-        i.orientation.setColumn(1, v2)
-        i.orientation.setColumn(2, v3)
+        i.orientation.setRow(0, v1)
+        i.orientation.setRow(1, v2)
+        i.orientation.setRow(2, v3)
                         
         #add i's children to the nodes list
         nodes.extend(i.children)

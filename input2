@@ -1,10 +1,10 @@
 #axiom = Node("space_station")
-axiom = Node("klingon")
+#axiom = Node("klingon")
 #axiom = Node("spike_ship")
 #axiom = Node("wing_ship")
 #axiom = Node("c_station")
 #axiom = Node("rotational_ship")
-#axiom = Node("tie_fighter")
+axiom = Node("tie_fighter")
 
 #==================================================================
 
@@ -22,7 +22,7 @@ def space_station(parent):
     spoke = Node("cylinder", vec3(-32,0,0), vec3(5,32,5), mat3.rotation(math.pi / 2, vec3(0,0,1)))
     subspoke = spoke.copy()
     subspoke.additive = False
-    subspoke.extents = subspoke.extents % (0.5, 1, 0.5) #(subspoke.extents[0] * 0.5, subspoke.extents[1], subspoke.extents[2] * 0.5)
+    subspoke.extents = subspoke.extents % (0.5, 1, 0.5)
     spoke.children.insert(0, subspoke)
     spoke.setSymmetry("rotational", vec3(0,0,0), vec3(0,1,0), 3)
 
@@ -35,8 +35,7 @@ def spire(parent):
     ret = parent.copy()
     ret.name = "ellipsoid"
     
-    tow = Node("tower", parent.position + vec3(0,parent.extents[1],0), vec3(7,20,7), mat3(1.0))
-    #tow.position = (0, (parent.extents[1] / 2.0), 0)
+    tow = Node("tower", parent.position + vec3(0,parent.extents[1],0), vec3(7,20,7), mat3(1.0))    
     tow.setSymmetry("reflective", parent.position, vec3(0,1,0))
 
     parent.active = False
@@ -45,8 +44,7 @@ def spire(parent):
 
 def tower(parent):
     ret = parent.copy()
-    #ret.position = (ret.position[0] + parent.extents[0], ret.position[1] + parent.extents[1], ret.position[2])
-    ret.position = ret.position + vec3(0,parent.extents[1], 0) #(ret.position[0], ret.position[1] + parent.extents[1], ret.position[2])
+    ret.position = ret.position + vec3(0,parent.extents[1], 0)
     ret.extents = ret.extents * 0.75
     
     parent.name = "cylinder"
@@ -60,7 +58,7 @@ def klingon(parent):
     parent.active = False
 
     ret2 = Node("wing", vec3(ret.extents[0]*2, 0, -15), vec3(50,3,15), mat3(1.0))
-    ret2.orientation = mat3.rotation(-35, vec3(0,0,1))    
+    ret2.orientation = mat3.rotation(35, vec3(0,0,1))
     ret2.setSymmetry("reflective", ret.position, vec3(1,0,0))
         
     return [ret, ret2]
@@ -81,13 +79,12 @@ def wing(parent):
 
     subtract_wing = parent.copy()
     subtract_wing.additive = False
-    subtract_wing.orientation = subtract_wing.orientation.rotate(math.pi / 8, vec3(100,42,0)) #math3D.multiplyQ(subtract_wing.orientation, mat3.rotation(math.pi / 8, vec3(100,42,0)))
+    subtract_wing.orientation = subtract_wing.orientation.rotate(math.pi / 8, vec3(100,42,0))
     subtract_wing.position = subtract_wing.position + vec3(0,0,-15)
 
     gun = Node("winggun", vec3(0,0,0), vec3(20,20,40), mat3(1.0))
-    #rot_mat = math3D.toMatrixQ(ret.orientation)
-    gun.position = ret.position + (ret.orientation.getColumn(0) * -ret.extents[0]) #math3D.scale3((rot_mat[0], rot_mat[4], rot_mat[8]), -ret.extents[0])
-    gun.position = gun.position + vec3(0,0,ret.extents[2])
+    gun.position = ret.position + (ret.orientation.getRow(0) * -ret.extents[0])
+    gun.position = gun.position + vec3(0,-gun.extents[1] / 2.0,gun.extents[2] / 2.0)
     gun.extents = vec3(4,20,4)
     gun.orientation = mat3.rotation(-math.pi / 2, vec3(1,0,0))
     
@@ -129,7 +126,7 @@ def spike_ship(parent):
     back = Node("ss_back", vec3(0,0,0), vec3(20,60,20), mat3.rotation(-math.pi / 3, vec3(1,0,0)))
     back.setSymmetry("rotational", vec3(0,0,0), vec3(0,0,1), 3)
 
-    side_wing = Node("ss_side_wing", vec3(0,0,100), vec3(20,5,15), mat3.rotation(math.pi / 4, vec3(0,0,1))) #zeroQ())
+    side_wing = Node("ss_side_wing", vec3(0,0,100), vec3(20,5,15), mat3(1.0))
     side_wing.setSymmetry("reflective", vec3(0,0,0), vec3(1,0,0))
     
     return [body, back, front, side_wing]
@@ -147,8 +144,7 @@ def ss_back(parent):
 
     ret = parent.copy()
     ret.extents = vec3(ret.extents[0] * 0.75,ret.extents[1],ret.extents[2] * 0.75)
-    #rot_mat = math3D.toMatrixQ(ret.orientation)
-    ret.position = parent.position + (ret.orientation.getColumn(1) * (parent.extents[0] * 2)) #math3D.scale3((rot_mat[1], rot_mat[5], rot_mat[9]), parent.extents[0] * 2))
+    ret.position = parent.position + (ret.orientation.getColumn(1) * (parent.extents[0] * 2))
     ret.orientation = ret.orientation.rotate(0.2, vec3(1,0,0))
     
     parent.active = False
@@ -160,8 +156,7 @@ def ss_side_wing(parent):
 
     ret = parent.copy()
     ret.extents = vec3(ret.extents[0] * 0.8, ret.extents[1], ret.extents[2])
-    #rot_mat = math3D.toMatrixQ(ret.orientation)
-    ret.position = parent.position + (ret.orientation.getColumn(0) * (parent.extents[0] * 2)) #math3D.scale3((rot_mat[0], rot_mat[4], rot_mat[8]), parent.extents[0] * 2))
+    ret.position = parent.position + (ret.orientation.getColumn(0) * (parent.extents[0] * 2))
     ret.orientation = ret.orientation.rotate(-0.3, vec3(0,1,0))
     
     parent.active = False
@@ -179,10 +174,6 @@ def wing_ship(parent):
     body.children.insert(0, temp)
 
     front = Node("ws_front", vec3(0,-15,200), vec3(5,10,20), mat3.rotation(-math.pi / 4, vec3(1,0,0)))
-    #front.setSymmetry("rotational", vec3(0,0,200), vec3(0,0,1), 4)
-
-    #back = Node("ws_back", vec3(0,0,0), vec3(20,60,20), mat3.rotation(-math.pi / 3, vec3(1,0,0)))
-    #back.setSymmetry("rotational", vec3(0,0,0), vec3(0,0,1), 3)
 
     side_wing = Node("ws_side_wing", vec3(20,30,50), vec3(40,10,40))
     side_wing.setSymmetry("reflective", vec3(0,0,0), vec3(1,0,0))
@@ -221,16 +212,9 @@ def c_station(parent):
     parent.active = False
     #make a nice central cylinder
     central_spire = Node("cs_central_spire", vec3(0,0,0), vec3(25,200,25), mat3(1.0))
-    #temp = Node("rectangle", vec3(0,10,55), vec3(15,20,75), mat3(1.0))
-    #body.children.insert(0, temp)
-    #temp = Node("ellipsoid", vec3(0,15,0), vec3(30,30,30), mat3(1.0))
-    #body.children.insert(0, temp)
 
     wing = Node("cs_wing", vec3(100,0,0), vec3(100,75,50), mat3(1.0))
     wing.setSymmetry("rotational", vec3(0,0,0), vec3(0,1,0), 3)
-
-    #back = Node("ws_back", vec3(0,0,0), vec3(20,60,20), mat3.rotation(-math.pi / 3, vec3(1,0,0)))
-    #back.setSymmetry("rotational", vec3(0,0,0), vec3(0,0,1), 3)
     
     return [central_spire, wing]
 
@@ -287,7 +271,7 @@ def rs_front(parent):
     sub_wing.position = sub_wing.position + vec3(0, shape.extents[1], 0)
     sub_wing.additive = False
     sub_wing.extents = vec3(sub_wing.extents[0], sub_wing.extents[1], sub_wing.extents[2] * 1.2)
-    sub_wing.orientation = sub_wing.orientation.rotate(math.pi / 14, vec3(1,0,0))
+    sub_wing.orientation = sub_wing.orientation.rotate(-math.pi / 14, vec3(1,0,0))
     shape.children.insert(0,sub_wing)
     
     parent.active = False
@@ -296,12 +280,6 @@ def rs_front(parent):
 def rs_back(parent):
     shape = parent.copy()
     shape.name = "cylinder"
-
-    # ret = parent.copy()
-    # ret.extents = vec3(ret.extents[0] * 0.75, ret.extents[1], ret.extents[2] * 0.75)
-    # rot_mat = math3D.toMatrixQ(ret.orientation)
-    # ret.position = math3D.add3(parent.position, math3D.scale3((rot_mat[1], rot_mat[5], rot_mat[9]), parent.extents[0] * 2))
-    # ret.orientation = math3D.multiplyQ(ret.orientation, mat3.rotation(0.2, vec3(1,0,0)))
     
     parent.active = False
     return [shape]
@@ -314,7 +292,7 @@ def rs_side_wing(parent):
     sub_wing.position = sub_wing.position + vec3(0, shape.extents[1], 0)
     sub_wing.additive = False
     sub_wing.extents = vec3(sub_wing.extents[0], sub_wing.extents[1], sub_wing.extents[2] * 1.2)
-    sub_wing.orientation = sub_wing.orientation.rotate(-math.pi / 14, vec3(1,0,0))
+    sub_wing.orientation = sub_wing.orientation.rotate(math.pi / 14, vec3(1,0,0))
     shape.children.insert(0,sub_wing)
     
     parent.active = False
@@ -328,8 +306,7 @@ def tie_fighter(parent):
     body = Node("ellipsoid", vec3(0,0,0), vec3(30,30,30), mat3(1.0))
 
     wing = Node("tf_wing", vec3(50,0,0), vec3(10,20,10), mat3.rotation(math.pi / 2.0, vec3(0,0,1)))
-    #wing.setSymmetry("rotational", vec3(0,0,0), vec3(0,0,1), 2)
-    wing.setSymmetry("reflective", vec3(0,0,0), vec3(1,0,0))
+    wing.setSymmetry("rotational", vec3(0,0,0), vec3(0,0,1), 2)
 
     return [body, wing]
 
@@ -355,7 +332,7 @@ def tf_wing_fin(parent):
     sub_wing.position = vec3(fin.position[0], sub_wing.position[1], sub_wing.position[2])
     sub_wing.extents = sub_wing.extents * 0.5
     sub_wing.extents = vec3(fin.extents[0], sub_wing.extents[1] * 2, sub_wing.extents[2])
-    sub_wing.orientation = sub_wing.orientation.rotate(-math.pi / 6, vec3(1,0,0))
+    sub_wing.orientation = sub_wing.orientation.rotate(math.pi / 6, vec3(1,0,0))
     sub_wing.setSymmetry("reflective", parent.position, vec3(0,1,0))
 
     node = Node("meh")
