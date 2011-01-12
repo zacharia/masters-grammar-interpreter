@@ -133,7 +133,32 @@ class Node:
         else:
             return ret
 
-#==========================methods
+    #this method returns the position of a corner of the node's bounding box as a vector.
+    #which corner is desired is specified in the other arguments (which represent which corner to choose in local coordinates of the node) i.e. if this was called for a unit cube centred on the origin, 1,1,1 would return 0.5,0.5,0.5
+    def corner(self, x = -1, y = -1, z = -1):
+        #this makes the chosen corner values all either 1 or -1
+        if x != -1:
+            x = 1
+        if y != -1:
+            y = 1
+        if z != -1:
+            z = 1
+
+        #make a vector out of the chosen corner values
+        corner_specification = vec3(x,y,z)
+    
+        #then find the chosen corner's coordinates
+        ret = vec3()
+        ret.x = self.position.x + (self.extents.x * corner_specification.x)
+        ret.y = self.position.y + (self.extents.y * corner_specification.y)
+        ret.z = self.position.z + (self.extents.z * corner_specification.z)
+                
+        return ret
+
+
+#==========================Standard helper methods to be used in the rule sets
+
+#==========================interpreter methods
 
 def handle_args(args):
     """this takes the raw input arguments and returns a dictionary of the option names mapped
