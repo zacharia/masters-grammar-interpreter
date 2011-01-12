@@ -23,7 +23,7 @@ def main_cube(parent):
 
 #===============================rotation example
 
-def squid_ship(parent):
+def squid_ship(parent):    
     parent.active = False
     ret = Node("cylinder", in_position= vec3(50.0, 50, 50.0), in_extents= vec3(10.0, 10.0, 10.0), in_orientation = mat3.rotation(math.pi / 2, vec3(0,0,1)))
     ret.setSymmetry("rotational", vec3(50,60,50), vec3(1, 0, 0), 5)

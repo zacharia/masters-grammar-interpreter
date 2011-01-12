@@ -155,6 +155,15 @@ class Node:
                 
         return ret
 
+    #these methods return the node's local coordinate axes
+    def get_x_axis(self):
+        return self.orientation.getColumn(0)
+
+    def get_y_axis(self):
+        return self.orientation.getColumn(1)
+
+    def get_z_axis(self):
+        return self.orientation.getColumn(2)
 
 #==========================Standard helper methods to be used in the rule sets
 
