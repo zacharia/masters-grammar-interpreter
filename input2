@@ -7,6 +7,7 @@
 axiom = Node("tie_fighter")
 
 #==================================================================
+#uses absolute coordinates (-a)
 
 def space_station(parent):
     parent.active = False
@@ -51,6 +52,7 @@ def tower(parent):
     return [ret]
 
 #-------------------------------------------------------------
+#uses absolute coordinates (-a)
 
 def klingon(parent):
     parent.active = False
@@ -114,6 +116,7 @@ def cockpit(parent):
     return [ret]
 
 #=============================================================
+#uses absolute coordinates (-a)
 
 def spike_ship(parent):
     parent.active = False
@@ -163,6 +166,7 @@ def ss_side_wing(parent):
     return [shape, ret]
 
 #===========================================================
+#uses absolute coordinates (-a)
 
 def wing_ship(parent):
     parent.active = False
@@ -207,6 +211,7 @@ def ws_side_wing(parent):
     return [shape, ret, ret2]
 
 #===========================================================
+#uses absolute coordinates (-a)
 
 def c_station(parent):
     parent.active = False
@@ -247,6 +252,7 @@ def cs_central_spire(parent):
     return [Node("fuckoff")]
 
 #=============================================================
+#uses absolute coordinates (-a)
 
 def rotational_ship(parent):
     parent.active = False
@@ -299,6 +305,7 @@ def rs_side_wing(parent):
     return [shape]
 
 #==================================================
+#uses absolute coordinates (-a)
 
 def tie_fighter(parent):
     parent.active = False

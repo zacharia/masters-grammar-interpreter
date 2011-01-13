@@ -23,6 +23,7 @@ def main_cube(parent):
 
 
 #===============================rotation example
+#uses absolute coordinates (-a)
 
 def squid_ship(parent):    
     parent.active = False
