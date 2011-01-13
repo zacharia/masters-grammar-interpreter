@@ -173,7 +173,7 @@ def handle_args(args):
     """this takes the raw input arguments and returns a dictionary of the option names mapped
     onto their values"""
     #dictionary containing default values
-    options = {"input_file" : None, "output_file" : None, "max_iterations" : -1, "parallel_execution" : False, "verbose" : False, "quiet" : False}
+    options = {"input_file" : None, "output_file" : None, "max_iterations" : -1, "parallel_execution" : False, "verbose" : False, "quiet" : False, "relative_coordinates" : True}
 
     #while args is non-empty
     while args:
@@ -200,6 +200,10 @@ def handle_args(args):
         #if this flag is used, then the program shouldn't output the final machine readable code of the product.
         elif args[0] == "-q":
             options["quiet"] = True
+            args = args[1:]
+        #This flag indicates whether to use relative coordinates or absolute coordinates when interpreting the grammar.
+        elif args[0] == "-a":
+            options["relative_coordinates"] = False
             args = args[1:]
         else:
             print "unrecognized argument: %s" % args[0]
@@ -427,6 +431,23 @@ def doSymmetry(root):
     elif root.symmetry_type == "reflective":
         root.children.insert(0, makeReflectiveSymmetryCopy(root, root.symmetry_point, root.symmetry_vector))
     #if it's not symmetric, then do nothing.
+
+
+#This method goes through the derivation tree, from the root downwards, and updates each node's
+#position and orientation to be relative to that of it's parent.
+def updateNodePositionsRelative(root):
+
+    #loop through the children
+    for i in root.children:
+        #update their positions to be relative to their parent
+        i.position = (i.position * root.orientation) + root.position
+        #update their orientation to be relative to their parent
+        i.orientation = root.orientation * i.orientation
+    
+    #loop through the children of the node
+    for i in root.children:
+        #recurse on the children (depth-first walk)
+        updateNodePositionsRelative(i)
     
 
 #===========================main code
@@ -451,6 +472,10 @@ if __name__ == "__main__":
             print "parallel rule execution"
         else:
             print "serial rule execution"
+        if options["relative_coordinates"]:
+            print "relative coordinates"
+        else:
+            print "absolute coordinates"        
         print "\n"
 
     #get the input file
@@ -460,6 +485,11 @@ if __name__ == "__main__":
         print "AXIOM:\n" + axiom.displayTree()
 
     result = deriveTree(axiom, options)
+
+    if options["relative_coordinates"]:
+        if options["verbose"]:
+            print "Updating node coordinates relative to their parents."
+        updateNodePositionsRelative(result)
     
     if options["verbose"]:
         print "Creating symmetry branches."
