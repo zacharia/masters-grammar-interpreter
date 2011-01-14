@@ -104,19 +104,23 @@ class Node:
         self.symmetry_vector = vector
 
     def copy(self, copy_children = False):
-        ret = Node()
-        ret.name = copy.deepcopy(self.name)
-        
-        ret.position = copy.deepcopy(self.position)
-        ret.extents = copy.deepcopy(self.extents)
-        ret.orientation = copy.deepcopy(self.orientation)
-        
-        ret.additive = copy.deepcopy(self.additive)
-        return ret
+        if copy_children:
+            return copy.deepcopy(self)
+        else:
+            ret = Node()
+            ret.name = copy.deepcopy(self.name)
 
-    #this method splits a node up along on of it's axes.
-    #if in_place is true, the current node is made inactive and the resultant splits are added to it as children
-    #otherwise, the node is deactivated, and the splitted nodes are returned.
+            ret.position = copy.deepcopy(self.position)
+            ret.extents = copy.deepcopy(self.extents)
+            ret.orientation = copy.deepcopy(self.orientation)
+
+            ret.additive = copy.deepcopy(self.additive)
+            return ret
+
+    #this method splits a node up along on of it's axes.  if in_place
+    #is true, the current node is made inactive and the resultant
+    #splits are added to it as children otherwise, the node is
+    #deactivated, and the splitted nodes are returned.
     def splitNode(axis = "x", num_splits = 2, in_place = True):
         #make a list containing the splits, initially as copies of the current node
         ret = [self.copy() for i in range(num_splits)]
@@ -164,6 +168,12 @@ class Node:
 
     def get_z_axis(self):
         return self.orientation.getColumn(2)
+
+    #this method hollows out the shape it is called on, by creating a copy of the shape, shrinking the copy
+    #slightly (by hollow_size_factor given as an argument), and then inverting the copy's additive-ness.
+    def makeHollow(self, hollow_size_factor = 0.9, copy_children = False):
+        Node subtractive_copy = self.copy(copy_children)
+        #FIXME: finish this method once the scale/move/rotate _branch methods are done.
 
 #==========================Standard helper methods to be used in the rule sets
 
