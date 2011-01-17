@@ -172,8 +172,15 @@ class Node:
     #this method hollows out the shape it is called on, by creating a copy of the shape, shrinking the copy
     #slightly (by hollow_size_factor given as an argument), and then inverting the copy's additive-ness.
     def makeHollow(self, hollow_size_factor = 0.9, copy_children = False):
-        Node subtractive_copy = self.copy(copy_children)
+        subtractive_copy = self.copy(copy_children)
         #FIXME: finish this method once the scale/move/rotate _branch methods are done.
+
+    #move the node, and it's children by the offset given as an
+    #argument this only works properly when using relative
+    #coordinates, and may cause unintended results if running the
+    #program with absolute coordinates on (-a)
+    def moveNode(self, offset):
+        self.position += offset
 
 #==========================Standard helper methods to be used in the rule sets
 
