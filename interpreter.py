@@ -121,13 +121,25 @@ class Node:
     #is true, the current node is made inactive and the resultant
     #splits are added to it as children otherwise, the node is
     #deactivated, and the splitted nodes are returned.
-    def splitNode(axis = "x", num_splits = 2, in_place = True):
+    def splitNode(self, axis = "y", num_splits = 2, in_place = True):
         #make a list containing the splits, initially as copies of the current node
         ret = [self.copy() for i in range(num_splits)]
 
         #loop through ret and update the elements as appropriate
+        #count is used as a counter since looping over ret doesn't have any associated number
+        count = 0
         for i in ret:
-            pass
+            if axis == "x":
+                i.extents.x = self.extents.x / num_splits
+                i.position.x = self.corner().x + i.extents.x + (count * i.extents.x * 2)
+            elif axis == "y":
+                i.extents.y = self.extents.y / num_splits
+                i.position.y = self.corner().y + i.extents.y + (count * i.extents.y * 2)
+            elif axis == "z":
+                i.extents.z = self.extents.z / num_splits
+                i.position.z = self.corner().z + i.extents.z + (count * i.extents.z * 2)
+            #increase our counter
+            count += 1
 
         #deactivate the current node
         self.active = False
@@ -181,6 +193,12 @@ class Node:
     #program with absolute coordinates on (-a)
     def moveNode(self, offset):
         self.position += offset
+
+    #rotate the node, and it's children, by the axis angle given. as
+    #with moveNode(), this only works properly for relative
+    #coordinates
+    def rotateNode(self, angle, axis):
+        self.orientation.rotate(angle, axis)
 
 #==========================Standard helper methods to be used in the rule sets
 
