@@ -197,8 +197,8 @@ class Node:
     #rotate the node, and it's children, by the axis angle given. as
     #with moveNode(), this only works properly for relative
     #coordinates
-    def rotateNode(self, angle, axis):
-        self.orientation.rotate(angle, axis)
+    def rotateNode(self, angle, x, y, z):
+        self.orientation.rotate(angle, vec3(x,y,z))
 
 #==========================Standard helper methods to be used in the rule sets
 

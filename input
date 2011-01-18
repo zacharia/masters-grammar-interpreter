@@ -37,42 +37,45 @@ def squid_ship(parent):
     return [ret, ret2, ret3]
 
 
-def cylinder(parent):
-    ret = Node("cylinder", in_position = parent.position, in_extents = parent.extents, in_orientation = parent.orientation)
-    ret.position = ret.position + vec3(ret.extents[0], ret.extents[1], 0)
-    ret.extents = ret.extents * 0.9
-    ret.orientation = ret.orientation * mat3.rotation(-math.pi / 10, vec3(0,0,1))
+# def cylinder(parent):
+#     ret = Node("cylinder", in_position = parent.position, in_extents = parent.extents, in_orientation = parent.orientation)
+#     ret.position = ret.position + vec3(ret.extents[0], ret.extents[1], 0)
+#     ret.extents = ret.extents * 0.9
+#     ret.orientation = ret.orientation * mat3.rotation(-math.pi / 10, vec3(0,0,1))
     
-    return [ret]
+#     return [ret]
 
 #==================================
 
 def testing(parent):
     parent.active = False
     #ret = Node("testing_block")
-    ret = Node("ellipsoid")
+    ret = Node("rectangle")
     ret.position = vec3(0,0,0)
     ret.orientation = mat3(1.0)
     ret.extents = vec3(10,15,10)
     ret.num = 3
 
-    ret.splitNode("x", 3)
+    #ret.splitNode("x", 3)
 
-    # tower = Node("cylinder")
-    # tower.extents = vec3(5,15,5)
-    # tower.position = ret.corner(1,1,1)
-    # tower.moveNode( vec3(0,50,0) )
+    tower = Node("cylinder")
+    tower.extents = vec3(5,15,5)
+    tower.position = ret.corner(1,1,1)
+    tower.orientation = mat3(1.0)
 
-    # tc1 = Node("ellipsoid")
-    # tc1.extents = vec3(5,5,5)
-    # tc1.position = tower.extents
+    #tower.moveNode( vec3(0,50,0) )
+    tower.rotateNode(math.pi / 3, 0,0,1 )
 
-    # tc2 = tc1.copy()
-    # tc2.position.x *= -1
+    tc1 = Node("ellipsoid")
+    tc1.extents = vec3(5,5,5)
+    tc1.position = tower.extents
 
-    # tower.children.extend([tc1, tc2])
+    tc2 = tc1.copy()
+    tc2.position.x *= -1
 
-    return [ret]
+    tower.children.extend([tc1, tc2])
+
+    return [ret, tower]
 
 def testing_block(parent):
     ret = parent.copy()
