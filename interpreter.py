@@ -183,10 +183,23 @@ class Node:
 
     #this method hollows out the shape it is called on, by creating a copy of the shape, shrinking the copy
     #slightly (by hollow_size_factor given as an argument), and then inverting the copy's additive-ness.
-    def makeHollow(self, hollow_size_factor = 0.9, copy_children = False):
-        subtractive_copy = self.copy(copy_children)
-        #FIXME: finish this method once the scale/move/rotate _branch methods are done.
+    def makeHollow(self, hollow_size_factor = 0.9, and_children = True):
+        #do a post-order recursive walk of the tree, to avoid infinite
+        #loop problems with children being added and then recursed on
+        if and_children:
+            #recurse on the children of the node
+            for i in self.children:
+                i.makeHollow(hollow_size_factor, True)
 
+        #make a hollow copy of the current node and attach it to the
+        #node as a child
+        subtractive_copy = self.copy()
+        subtractive_copy.invertNodeAdditivity(False)
+        subtractive_copy.scaleNode(hollow_size_factor, False)
+        subtractive_copy.position = vec3(0.0)
+        self.children.append(subtractive_copy)
+
+        
     #move the node, and it's children by the offset given as an
     #argument this only works properly when using relative
     #coordinates, and may cause unintended results if running the
@@ -199,6 +212,36 @@ class Node:
     #coordinates
     def rotateNode(self, angle, x, y, z):
         self.orientation.rotate(angle, vec3(x,y,z))
+
+    #this method recursively scales a node by the scalar value of
+    #scaling_factor. If and_children is True, then it will scale the
+    #entire branch rooted by self, with the scaling centred on self.
+    def scaleNode(self, scaling_factor, and_children = True):
+        #first scale self.
+        self.extents = self.extents * scaling_factor
+        
+        #if we need to recurse on self's children
+        if and_children:
+            #loop through the children of the current node.
+            children_list = self.children
+            for i in children_list:
+                #adjust each of the children's extents and positions
+                i.extents = i.extents * scaling_factor
+                i.position = i.position * scaling_factor
+                #add the child's children to the list (instead of recursing on them)
+                children_list.extend(i.children)
+
+    #this method inverts a node's additivity, and optionally the rest
+    #of the branch it roots
+    def invertNodeAdditivity(self, and_children = True):
+        self.additive = not self.additive
+        
+        if and_children:
+            children_list = self.children
+            for i in children_list:
+                i.additive = not i.additive
+                children_list.extend(i.children)
+                
 
 #==========================Standard helper methods to be used in the rule sets
 

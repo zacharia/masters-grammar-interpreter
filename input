@@ -50,13 +50,13 @@ def squid_ship(parent):
 def testing(parent):
     parent.active = False
     #ret = Node("testing_block")
-    ret = Node("rectangle")
+    ret = Node("ellipsoid")
     ret.position = vec3(0,0,0)
     ret.orientation = mat3(1.0)
     ret.extents = vec3(10,15,10)
     ret.num = 3
 
-    #ret.splitNode("x", 3)
+    #ret.splitNode("y", 3)
 
     tower = Node("cylinder")
     tower.extents = vec3(5,15,5)
@@ -64,7 +64,7 @@ def testing(parent):
     tower.orientation = mat3(1.0)
 
     #tower.moveNode( vec3(0,50,0) )
-    tower.rotateNode(math.pi / 3, 0,0,1 )
+    #tower.rotateNode(math.pi / 3, 0,0,1 )
 
     tc1 = Node("ellipsoid")
     tc1.extents = vec3(5,5,5)
@@ -74,6 +74,9 @@ def testing(parent):
     tc2.position.x *= -1
 
     tower.children.extend([tc1, tc2])
+
+    tower.scaleNode(2)
+    tower.makeHollow()
 
     return [ret, tower]
 
