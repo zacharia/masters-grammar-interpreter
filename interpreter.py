@@ -251,7 +251,29 @@ class Node:
             for i in children_list:
                 i.additive = not i.additive
                 children_list.extend(i.children)
-                
+
+    #This method sets the priority of a node, and optionally all of it's children too.
+    def setNodePriority(self, priority = 0, and_children = True):
+        self.priority = priority
+        
+        if and_children:
+            children_list = self.children
+            for i in children_list:
+                i.priority = priority
+                children_list.extend(i.children)
+
+    #This method adjusts the priority of a node, by the amount given
+    #as an argument. Optionally can be applied to all of it's children
+    #too.
+    def adjustNodePriority(self, amount = 1, and_children = True):
+        self.priority += amount
+        
+        if and_children:
+            children_list = self.children
+            for i in children_list:
+                i.priority += amount
+                children_list.extend(i.children)
+
 
 #==========================Standard helper methods to be used in the rule sets
 
