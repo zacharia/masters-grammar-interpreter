@@ -1,10 +1,10 @@
 #axiom = Node("space_station")
 #axiom = Node("klingon")
 #axiom = Node("spike_ship")
-#axiom = Node("wing_ship")
+axiom = Node("wing_ship")
 #axiom = Node("c_station")
 #axiom = Node("rotational_ship")
-axiom = Node("tie_fighter")
+#axiom = Node("tie_fighter")
 
 #==================================================================
 #uses absolute coordinates (-a)
@@ -176,6 +176,7 @@ def wing_ship(parent):
     body.children.insert(0, temp)
     temp = Node("ellipsoid", vec3(0,15,0), vec3(30,30,30), mat3(1.0))
     body.children.insert(0, temp)
+    body.priority -= 3
 
     front = Node("ws_front", vec3(0,-15,200), vec3(5,10,20), mat3.rotation(-math.pi / 4, vec3(1,0,0)))
 
@@ -203,9 +204,11 @@ def ws_side_wing(parent):
     ret.name = "cylinder"
     ret.additive = False
     ret.extents = vec3(ret.extents[0], ret.extents[1] * 0.5, ret.extents[2])
+    ret.priority -= 1
 
     ret2 = shape.copy()
     ret2.extents = vec3(ret2.extents[0] * 0.75, ret2.extents[1] * 0.5, ret2.extents[2] * 0.75)
+    ret2.priority -= 2
     
     parent.active = False
     return [shape, ret, ret2]
