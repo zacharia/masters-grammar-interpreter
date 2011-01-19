@@ -12,7 +12,7 @@ import math
 class Node:
     "Represents a node in the derivation tree and stores all related information"
     
-    def __init__(self, in_name = "", in_position = vec3(), in_extents = vec3(), in_orientation = mat3(1.0), in_parent = None, in_active = True, in_children = None, in_additive = True):
+    def __init__(self, in_name = "", in_position = vec3(), in_extents = vec3(), in_orientation = mat3(1.0), in_parent = None, in_active = True, in_children = None, in_additive = True, in_priority = 0):
         #position of the centre of the node's shape
         self.position = in_position
         #radii of the extents of the node's shape
@@ -39,6 +39,9 @@ class Node:
         self.symmetry_point = vec3()
         self.symmetry_vector = vec3()
 
+        #this number indicates when the node should be added into the voxel grid. Higher means sooner.
+        self.priority = in_priority
+
     def toString(self, computer_readable = False, verbose = True):
         """This method returns a string representation of the current node, if verbose is true, all
         attributes are included in the string, if not, then only a summary string is returned. If the second
@@ -47,22 +50,26 @@ class Node:
             ret_string = ""
             #this is assumed to always be verbose
             ret_string += "name %s active %s additive %s" % (self.name, self.active, self.additive)
+            
             ret_string += " position "
             for i in self.position:
                 ret_string += " %s" % i
+                
             ret_string += " extents "
             for i in self.extents:
                 ret_string += " %s" % i
+                
             ret_string += " orientation "
-            #this is currently set to always output the orientation as a rotation matrix. The commented out code is for doing it as a matrix or quaternion,
-            #depending on whether orientation_mat has anything in it (empty implies that the quaternion should be used)
             for i in self.orientation.toList():
                 ret_string += " %s" % i
+                
+            ret_string += " priority "
+            ret_string += " %s " % self.priority
             
             return ret_string
         else:
             if verbose:
-                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s | symmetry: %s | additive: %s" % (self.name, self.active, self.position, self.extents, self.orientation.toList(), self.symmetry_type, self.additive)
+                return "name: %s | active: %s | position: %s | extents: %s | orientation: %s | symmetry: %s | additive: %s | priority: %s" % (self.name, self.active, self.position, self.extents, self.orientation.toList(), self.symmetry_type, self.additive, self.priority)
             else:
                 return "name: %s | active: %s | symmetry: %s" % (self.name, self.active, self.symmetry_type)
 
@@ -115,6 +122,8 @@ class Node:
             ret.orientation = copy.deepcopy(self.orientation)
 
             ret.additive = copy.deepcopy(self.additive)
+
+            ret.priority = copy.deepcopy(self.priority)
             return ret
 
     #this method splits a node up along on of it's axes.  if in_place
@@ -197,6 +206,7 @@ class Node:
         subtractive_copy.invertNodeAdditivity(False)
         subtractive_copy.scaleNode(hollow_size_factor, False)
         subtractive_copy.position = vec3(0.0)
+        subtractive_copy.priority = self.priority - 1
         self.children.append(subtractive_copy)
 
         
