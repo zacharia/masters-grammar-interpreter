@@ -88,18 +88,21 @@ class Node:
         #return the return string
         return ret
 
+    #this displays a list of all active nodes, in breadth-first order
     def displayActiveNodes(self):
         """This method creates a string containing only the active nodes of the tree, basically the nodes that
         actually make up the final product of the derivation tree."""
+        #the return string of the method
         ret = ""
-        #if the current node is active, then add it to the return string
-        if self.active:
-            ret += self.toString(True)
-            ret += " # \n"
-
-        #recurse on the children of this node
-        for i in self.children:
-            ret += i.displayActiveNodes()
+        #make a list of the nodes and use it for a breadth-first walk
+        node_list = [ self ]
+        for i in node_list:
+            #if the current node is active, then add it to the return string
+            if i.active:
+                ret += i.toString(True)
+                ret += " # \n"
+            #extend the list with the node's children, for a breadth-first walk
+            node_list.extend(i.children)
 
         #return the final string that we produce.
         return ret
