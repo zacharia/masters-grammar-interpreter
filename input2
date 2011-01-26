@@ -1,7 +1,7 @@
-#axiom = Node("space_station")
+axiom = Node("space_station")
 #axiom = Node("klingon")
 #axiom = Node("spike_ship")
-axiom = Node("wing_ship")
+#axiom = Node("wing_ship")
 #axiom = Node("c_station")
 #axiom = Node("rotational_ship")
 #axiom = Node("tie_fighter")
@@ -23,9 +23,13 @@ def space_station(parent):
     spoke = Node("cylinder", vec3(-32,0,0), vec3(5,32,5), mat3.rotation(math.pi / 2, vec3(0,0,1)))
     subspoke = spoke.copy()
     subspoke.additive = False
-    subspoke.extents = subspoke.extents % (0.5, 1, 0.5)
+    subspoke.extents.x = subspoke.extents.x * 0.5
+    subspoke.extents.y = subspoke.extents.y * 1.0
+    subspoke.extents.z = subspoke.extents.z * 0.5
+    subspoke.priority = -10
     spoke.children.insert(0, subspoke)
     spoke.setSymmetry("rotational", vec3(0,0,0), vec3(0,1,0), 3)
+    spoke.priority = -5
 
     #add central blob
     cent = Node("ellipsoid", vec3(0,0,0), vec3(10,10,10), mat3(1.0))
@@ -231,12 +235,15 @@ def cs_wing(parent):
 
     indentation = Node("cs_wing_indentation", parent.position + vec3(10,0,40), vec3(90,40,20), mat3(1.0))
     indentation.setSymmetry("reflective", parent.position, vec3(0,0,1))
+    indentation.priority = -3
 
     wing_hole = Node("cylinder", parent.position + vec3(50,0,0), vec3(40,40,40), mat3.rotation(math.pi / 2, vec3(1,0,0)))
     wing_hole.additive = False
+    wing_hole.priority = -2
     dock_area = Node("rectangle", wing_hole.position + vec3(-50,20,0), vec3(30,10,10), mat3(1.0))
     dock_area.setSymmetry("reflective", wing_hole.position, vec3(0,1,0))
     dock_area.additive = False
+    dock_area.priority = -5
 
     wing_hole.children.insert(0, dock_area)
     parent.children.insert(0, wing_hole)
