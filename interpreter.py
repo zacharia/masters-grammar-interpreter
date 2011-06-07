@@ -71,9 +71,10 @@ class Node:
             ret_string += " priority "
             ret_string += " %s" % self.priority
 
-            ret_string += " tags "
+            ret_string += " tags_begin "
             for i in self.tags:
                 ret_string += " %s" % i
+            ret_string += " tags_end"
 
             return ret_string
         else:
