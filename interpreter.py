@@ -12,7 +12,7 @@ import math
 class Node:
     "Represents a node in the derivation tree and stores all related information"
     
-    def __init__(self, in_name = "", in_position = vec3(), in_extents = vec3(), in_orientation = mat3(1.0), in_parent = None, in_active = True, in_children = None, in_additive = True, in_priority = 0):
+    def __init__(self, in_name = "", in_position = vec3(), in_extents = vec3(), in_orientation = mat3(1.0), in_parent = None, in_active = True, in_children = None, in_additive = True, in_priority = 0, in_tags = None):
         #position of the centre of the node's shape
         self.position = in_position
         #radii of the extents of the node's shape
@@ -32,6 +32,11 @@ class Node:
             self.children = []
         else:
             self.children = in_children
+        #this stores any tags associated with the object.
+        if in_tags == None:
+            self.tags = []
+        else:
+            self.tags = in_tags
 
         #the stuff for symmetry
         self.symmetry_type = "None" #can be rotation or reflection
@@ -64,8 +69,12 @@ class Node:
                 ret_string += " %s" % i
                 
             ret_string += " priority "
-            ret_string += " %s " % self.priority
-            
+            ret_string += " %s" % self.priority
+
+            ret_string += " tags "
+            for i in self.tags:
+                ret_string += " %s" % i
+
             return ret_string
         else:
             if verbose:
@@ -127,6 +136,9 @@ class Node:
             ret.additive = copy.deepcopy(self.additive)
 
             ret.priority = copy.deepcopy(self.priority)
+
+            ret.tags = copy.deepcopy(self.tags)
+            
             return ret
 
     #this method splits a node up along on of it's axes.  if in_place

@@ -20,6 +20,7 @@ def main_cube(parent):
     ret = parent.copy()
     parent.active = False;
     ret.name = "rectangle"
+    ret.tags = ["main_body", "armoured"]
     #if
     #parent.splitNode("x", 2)
     return [ret]
