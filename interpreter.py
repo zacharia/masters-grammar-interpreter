@@ -6,6 +6,7 @@ import sys
 from cgkit.cgtypes import *
 import copy
 import math
+import random
 
 #==========================class definitions
 
@@ -587,6 +588,8 @@ if __name__ == "__main__":
 
     #parse the arguments
     options = handle_args(args)
+
+    random.seed()
 
     if options["verbose"]:
         print "\n"
