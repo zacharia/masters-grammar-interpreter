@@ -4,8 +4,9 @@
 #defines a Node object with name axiom. This is the axiom of the grammar
 
 #axiom = Node("squid_ship") #10 iterations works nicely
-axiom = Node("borg_cube")
+#axiom = Node("borg_cube")
 #axiom = Node("testing")
+axiom = Node("enterprise")
 
 #=============================reflection stuff
 
@@ -97,4 +98,93 @@ def testing_block(parent):
     
     parent.name = "rectangle"
 
+    return [ret]
+
+#=====================================
+
+e_disk_radius = 75
+e_disk_height = 5
+e_disk_position = vec3(0,0,0)
+e_neck_height = 35
+
+def enterprise(parent):
+    parent.active = False
+
+    e_disk = Node("enterprise_disk")
+
+    e_neck = Node("enterprise_neck")
+    e_neck.position = vec3(0, -e_neck_height * 0.6, e_disk_radius)
+
+    return [e_disk, e_neck]
+
+def enterprise_disk(parent):
+    parent.active = False
+    ret = parent.copy()
+    ret.name = "cylinder"
+    ret.position = e_disk_position
+    ret.extents = vec3(e_disk_radius, e_disk_height, e_disk_radius)
+
+    e_disk_bulge = ret.copy()
+    e_disk_bulge.name = "ellipsoid"
+    e_disk_bulge.extents = vec3(e_disk_radius * 0.85, e_disk_height * 3, e_disk_radius * 0.85)
+
+    e_disk_bridge = e_disk_bulge.copy()
+    e_disk_bridge.name = "ellipsoid"
+    e_disk_bridge.extents = vec3(e_disk_radius * 0.25, e_disk_height * 4, e_disk_radius * 0.25)
+    
+    return [ret, e_disk_bulge, e_disk_bridge]
+
+def enterprise_neck(parent):
+    parent.active = False
+    
+    ret = parent.copy()
+    ret.name = "ellipsoid"
+    ret.position = vec3(0,0,0)
+    ret.extents = vec3(5, e_neck_height, 15)
+    ret.orientation = mat3.rotation(math.pi / 3, vec3(1,0,0))
+
+    e_body = Node("enterprise_body")
+    e_body.position = vec3(0, -15, e_neck_height)
+    
+    return [ret, e_body]
+
+def enterprise_body(parent):
+    parent.active = False
+    
+    ret = parent.copy()
+    ret.name = "cylinder"
+    temp_corner = ret.corner()
+    ret.position = vec3(0,0,0)
+    ret.extents = vec3(e_disk_radius / 4, e_disk_radius / 2, e_disk_radius / 4)
+    ret.orientation = mat3.rotation(math.pi / 2, vec3(1,0,0))
+
+    e_wing = Node("enterprise_wing")
+    e_wing.setSymmetry("reflective", vec3(0,0,0), vec3(1,0,0))
+    e_wing.position = vec3(30, e_disk_radius / 3, e_disk_radius / 3)
+    
+    return [ret, e_wing]
+
+def enterprise_wing(parent):
+    parent.active = False
+
+    ret = Node("rectangle")
+    ret.position = vec3(0,0,0)
+    ret.extents = vec3(3, e_disk_radius / 2, 10)
+    #ret.orientation = mat3.rotation(math.pi / 3, vec3(0,0,1))
+    #ret.orientation = ret.orientation * mat3.rotation(math.pi / 6, vec3(0,1,0))
+    #ret.orientation = ret.orientation * mat3.rotation(math.pi / 4, vec3(-1,1,0))
+
+    e_wing_thruster = Node("enterprise_thruster")
+    e_wing_thruster.position = ret.corner(-1,1,-1)
+
+    return [ret, e_wing_thruster]
+
+def enterprise_thruster(parent):
+    parent.active = False
+
+    ret = Node("rectangle")
+    ret.position = vec3(0,0,0)
+    ret.extents = vec3(5, 10, e_disk_radius / 2)
+    #ret.orientation = mat3.rotation(math.pi / 2, vec3(1,0,0))
+    
     return [ret]

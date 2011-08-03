@@ -10,6 +10,9 @@ axiom = Node("space_station")
 #uses absolute coordinates (-a)
 
 def space_station(parent):
+    num_spires = random.randint(1,7)
+    num_spokes = random.randint(1,7)
+    ring_x = random.randint(1,7)
     parent.active = False
     #make ring using subtaction
     ret = Node("ellipsoid", vec3(0,0,0), vec3(64,10,64), mat3(1.0))
@@ -19,7 +22,7 @@ def space_station(parent):
     #make spire
     spire = Node("spire", vec3(64,0,0), vec3(16,32,16), mat3(1.0))
     spire.tags.append("spire")
-    spire.setSymmetry("rotational", vec3(0,0,0), vec3(0,1,0), 3)
+    spire.setSymmetry("rotational", vec3(0,0,0), vec3(0,1,0), num_spires)
 
     #add spokes
     spoke = Node("cylinder", vec3(-32,0,0), vec3(5,32,5), mat3.rotation(math.pi / 2, vec3(0,0,1)))
@@ -31,11 +34,12 @@ def space_station(parent):
     subspoke.extents.z = subspoke.extents.z * 0.5
     subspoke.priority = -10
     spoke.children.insert(0, subspoke)
-    spoke.setSymmetry("rotational", vec3(0,0,0), vec3(0,1,0), 3)
+    spoke.setSymmetry("rotational", vec3(0,0,0), vec3(0,1,0), num_spokes)
     spoke.priority = -5
 
     #add central blob
     cent = Node("ellipsoid", vec3(0,0,0), vec3(10,10,10), mat3(1.0))
+    cent.tags.append("centre")
     
     return [ret, ret2, spire, spoke, cent]
 
