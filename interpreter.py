@@ -190,10 +190,10 @@ class Node:
         corner_specification = vec3(x,y,z)
     
         #then find the chosen corner's coordinates
-        ret = vec3()
-        ret.x = self.position.x + (self.extents.x * corner_specification.x)
-        ret.y = self.position.y + (self.extents.y * corner_specification.y)
-        ret.z = self.position.z + (self.extents.z * corner_specification.z)
+        ret = copy.copy(self.position)
+        ret = ret + self.orientation.getRow(0).normalize() * self.extents.x * corner_specification.x
+        ret = ret + self.orientation.getRow(1).normalize() * self.extents.y * corner_specification.y
+        ret = ret + self.orientation.getRow(2).normalize() * self.extents.z * corner_specification.z
                 
         return ret
 
