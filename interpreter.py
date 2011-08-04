@@ -179,11 +179,11 @@ class Node:
     #which corner is desired is specified in the other arguments (which represent which corner to choose in local coordinates of the node) i.e. if this was called for a unit cube centred on the origin, 1,1,1 would return 0.5,0.5,0.5
     def corner(self, x = -1, y = -1, z = -1):
         #this makes the chosen corner values all either 1 or -1
-        if x != -1:
+        if x != -1 and x != 0:
             x = 1
-        if y != -1:
+        if y != -1 and y != 0:
             y = 1
-        if z != -1:
+        if z != -1 and z != 0:
             z = 1
 
         #make a vector out of the chosen corner values
