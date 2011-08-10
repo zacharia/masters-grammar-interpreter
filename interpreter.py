@@ -175,26 +175,33 @@ class Node:
         else:
             return ret
 
-    #this method returns the position of a corner of the node's bounding box as a vector.
-    #which corner is desired is specified in the other arguments (which represent which corner to choose in local coordinates of the node) i.e. if this was called for a unit cube centred on the origin, 1,1,1 would return 0.5,0.5,0.5
+    #this method returns the position of a corner of the node's
+    #bounding box as a vector.  which corner is desired is specified
+    #in the other arguments (which represent which corner to choose in
+    #local coordinates of the node) i.e. if this was called for a unit
+    #cube centred on the origin, 1,1,1 would return 0.5,0.5,0.5.  The
+    #arguments do not have to be integers, this allows choosing
+    #locations that aren't actually at the corners.
     def corner(self, x = -1, y = -1, z = -1):
-        #this makes the chosen corner values all either 1 or -1
-        if x != -1 and x != 0:
-            x = 1
-        if y != -1 and y != 0:
-            y = 1
-        if z != -1 and z != 0:
-            z = 1
-
         #make a vector out of the chosen corner values
         corner_specification = vec3(x,y,z)
-    
         #then find the chosen corner's coordinates
         ret = copy.copy(self.position)
         ret = ret + self.orientation.getRow(0).normalize() * self.extents.x * corner_specification.x
         ret = ret + self.orientation.getRow(1).normalize() * self.extents.y * corner_specification.y
         ret = ret + self.orientation.getRow(2).normalize() * self.extents.z * corner_specification.z
-                
+        return ret
+
+    #as above, but only gives relative local coordinates. It gives the
+    #corner in local coordinates, not global.
+    def corner_relative(self, x = -1, y = -1, z = -1):
+        #make a vector out of the chosen corner values
+        corner_specification = vec3(x,y,z)
+        #then find the chosen corner's coordinates
+        ret = vec3()
+        ret[0] = self.extents.x * corner_specification.x
+        ret[1] = self.extents.y * corner_specification.y
+        ret[2] = self.extents.z * corner_specification.z
         return ret
 
     #these methods return the node's local coordinate axes
