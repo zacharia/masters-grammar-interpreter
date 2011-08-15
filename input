@@ -106,111 +106,140 @@ e_disk_radius = 75
 e_disk_height = 3
 e_disk_position = vec3(0,0,0)
 e_neck_height = 35
+e_thruster_number = 2 #random.randint(1,5)
 
 def enterprise(parent):
     parent.active = False
 
     e_disk = Node("enterprise_disk")
+    e_disk.position = e_disk_position
+    e_disk.extents = vec3(e_disk_radius, e_disk_height, e_disk_radius)
+    e_disk.tags.append("disk")
 
     e_neck = Node("enterprise_neck")
     e_neck.position = vec3(0, -e_neck_height * 0.6, e_disk_radius)
+    e_neck.extents = vec3(5, e_neck_height, 15)
+    e_neck.orientation = mat3.rotation(math.pi / 4, vec3(1,0,0))
+    e_neck.tags.append("neck")
 
     return [e_disk, e_neck]
 
 def enterprise_disk(parent):
-    parent.active = False
-    ret = parent.copy()
-    ret.name = "cylinder"
-    ret.position = e_disk_position
-    ret.extents = vec3(e_disk_radius, e_disk_height, e_disk_radius)
-
-    e_disk_bulge = ret.copy()
+    #parent.active = False
+    parent.name = "cylinder"
+    
+    e_disk_bulge = parent.copy()
     e_disk_bulge.name = "ellipsoid"
     e_disk_bulge.extents = vec3(e_disk_radius * 0.85, e_disk_height * 3, e_disk_radius * 0.85)
+    e_disk_bulge.tags.append("disk")
 
     e_disk_bridge = e_disk_bulge.copy()
     e_disk_bridge.name = "ellipsoid"
     e_disk_bridge.extents = vec3(e_disk_radius * 0.25, e_disk_height * 5, e_disk_radius * 0.25)
+    e_disk_bridge.tags.append("disk")
     
-    return [ret, e_disk_bulge, e_disk_bridge]
+    return [e_disk_bulge, e_disk_bridge]
 
 def enterprise_neck(parent):
-    parent.active = False
+    #parent.active = False
+    parent.name = "rectangle"
     
-    ret = parent.copy()
-    #ret.name = "ellipsoid"
-    ret.name = "rectangle"
-    ret.position = vec3(0,0,0)
-    ret.extents = vec3(5, e_neck_height, 15)
-    ret.orientation = mat3.rotation(math.pi / 4, vec3(1,0,0))
-
     e_neck_corner_remover = Node("rectangle")
-    e_neck_corner_remover.position = ret.corner(0,1,1)
-    e_neck_corner_remover.extents = vec3(ret.extents[0] * 1.2, ret.extents[2] / 2, ret.extents[2] / 2)
+    e_neck_corner_remover.position = vec3(0, parent.extents[1], parent.extents[2])
+    e_neck_corner_remover.extents = vec3(parent.extents[0] * 1.2, parent.extents[2] / 2, parent.extents[2] / 2)
     e_neck_corner_remover.additive = False
-    e_neck_corner_remover.orientation = ret.orientation * mat3.rotation(math.pi / 4, vec3(1,0,0))
+    e_neck_corner_remover.orientation = mat3.rotation(math.pi / 4, vec3(1,0,0))
     e_neck_corner_remover.priority = -1
 
     e_body = Node("enterprise_body")
-    e_body.position = vec3(0, -20, e_neck_height)
+    e_body.extents = vec3(e_disk_radius / 4, e_disk_radius / 1.5, e_disk_radius / 4)
+    e_body.position = parent.corner_relative(0,-1,0) + vec3(0,0,e_body.extents[2] / 5)
+    e_body.orientation = mat3.rotation(math.pi / 4, vec3(1,0,0))
+    e_body.tags.append("body")
     
-    return [ret, e_body, e_neck_corner_remover]
+    return [e_neck_corner_remover, e_body]
 
 def enterprise_body(parent):
-    parent.active = False
+    #parent.active = False
+    parent.name = "cylinder"
     
-    ret = parent.copy()
-    ret.name = "cylinder"
-    temp_corner = ret.corner()
-    ret.position = vec3(0,0,0)
-    ret.extents = vec3(e_disk_radius / 4, e_disk_radius / 1.5, e_disk_radius / 4)
-    ret.orientation = mat3.rotation(math.pi / 2, vec3(1,0,0))
-
     e_wing = Node("enterprise_wing")
+    e_wing.extents = vec3(e_disk_radius / 16, e_disk_radius / 8, e_disk_radius / 2)
+    e_wing.position = parent.corner_relative(2, -0.5, 1.5)
+    e_wing.orientation = mat3.rotation(math.pi / 3, vec3(0,0,1))
+    e_wing.orientation = e_wing.orientation * mat3.rotation(math.pi / 6, vec3(0,1,0))
     e_wing.setSymmetry("reflective", vec3(0,0,0), vec3(1,0,0))
-    e_wing.position = vec3(30, e_disk_radius / 3, e_disk_radius / 3)
+    #e_wing.orientation = e_wing.orientation * mat3.rotation(math.pi / 6, vec3(0,1,0))
+    #e_wing.orientation = e_wing.orientation * mat3.rotation(math.pi / 4, vec3(-1,1,0))
+    # e_wing.tags.append("wing")
+    # if e_thruster_number == 2:
+    #     e_wing.setSymmetry("reflective", vec3(0,0,0), vec3(1,0,0))
+    #     e_wing.position = vec3(30, e_disk_radius / 3, e_disk_radius / 3)
+    # else:
+    #     e_wing.setSymmetry("rotational", vec3(0,0,0), vec3(0,0,1), e_thruster_number)
+    #     e_wing.position = vec3(0, e_disk_radius / 3, e_disk_radius / 3)
 
     e_body_front_extension = Node("cylinder")
-    e_body_front_extension.position = copy.copy(ret.position)
-    e_body_front_extension.position[2] = ret.corner(1,1,1)[2]
-    e_body_front_extension.extents = vec3(ret.extents[0] * 0.75, ret.extents[1] * 0.1, ret.extents[2] * 0.75)
-    e_body_front_extension.orientation = mat3.rotation(math.pi / 2, vec3(1,0,0))
+    e_body_front_extension.position = parent.corner_relative(0,1,0)
+    e_body_front_extension.extents = vec3(parent.extents[0] * 0.75, parent.extents[1] * 0.1, parent.extents[2] * 0.75)
+    e_body_front_extension.tags.append("body")
 
     e_body_back_subtraction = Node("cylinder")
-    e_body_back_subtraction.position = ret.corner(0,-1,-1)
-    e_body_back_subtraction.extents = vec3(ret.extents[0] * 0.8, ret.extents[0] * 1.5, ret.extents[0] * 2)
-    e_body_back_subtraction.orientation = mat3.rotation(math.pi / 2, vec3(0,0,1))
+    e_body_back_subtraction.position = parent.corner_relative(0,-1,-1)
+    e_body_back_subtraction.extents = vec3(parent.extents[0] * 2, parent.extents[0] * 1.5, parent.extents[0] * 0.8)
+    e_body_back_subtraction.orientation = mat3.rotation(math.pi / 2, vec3(0,1,0))
     e_body_back_subtraction.additive = False
     
-    return [ret, e_wing, e_body_front_extension, e_body_back_subtraction]
+    return [e_body_front_extension, e_body_back_subtraction, e_wing]
 
 def enterprise_wing(parent):
-    parent.active = False
-
-    ret = Node("rectangle")
-    ret.position = vec3(0,0,0)
-    ret.extents = vec3(3, e_disk_radius / 2, 10)
-    ret.orientation = mat3.rotation(math.pi / 3, vec3(0,0,1))
-    ret.orientation = ret.orientation * mat3.rotation(math.pi / 6, vec3(0,1,0))
-    #ret.orientation = ret.orientation * mat3.rotation(math.pi / 4, vec3(-1,1,0))
-
+    #parent.active = False
+    parent.name = "rectangle"
+        
     e_wing_thruster = Node("enterprise_thruster")
-    e_wing_thruster.position = ret.corner(-1,1,-1)
+    e_wing_thruster.position = parent.corner_relative(0,0,1)
+    e_wing_thruster.extents = vec3(e_disk_radius / 16, e_disk_radius / 8, e_disk_radius * 0.75)
 
-    return [ret, e_wing_thruster]
+    e_wing_thruster.reset_orientation = True
+
+    #e_wing_thruster.orientation = mat3.rotation(-math.pi / 3, vec3(0,0,1))
+    #e_wing_thruster.orientation = e_wing_thruster.orientation * mat3.rotation(-math.pi / 6, vec3(0,1,0))
+    
+    e_wing_thruster.tags.append("thruster")
+    e_wing_thruster.tags.append("wing")
+
+    return [e_wing_thruster]
 
 def enterprise_thruster(parent):
+    #parent.active = False
+    parent.name = "rectangle"
+        
+    e_thruster_bumps = parent.copy()
+    e_thruster_bumps.position = vec3(0,0,-parent.extents[2] * 0.333)
+    e_thruster_bumps.extents = vec3(parent.extents[0] * 1.5, parent.extents[1] * 0.6, parent.extents[2] * 0.6)
+    e_thruster_bumps.tags.append("thruster")
+    
+    return [e_thruster_bumps]
+
+#==============================
+#the spiral
+
+initial_rectangle_dimensions = vec3(5,10,5)
+
+def spiral(parent):
     parent.active = False
 
-    ret = Node("rectangle")
+    ret = Node("spiral_segment")
+    ret.extents = initial_rectangle_dimensions
     ret.position = vec3(0,0,0)
-    ret.extents = vec3(5, 10, e_disk_radius / 2)
-    #ret.orientation = mat3.rotation(math.pi / 2, vec3(1,0,0))
+    
+    return [ret]
 
-    e_thruster_bumps = ret.copy()
-    e_thruster_bumps.position = vec3(0,0,-ret.extents[2] * 0.333)
-    e_thruster_bumps.extents = vec3(ret.extents[0] * 1.5, ret.extents[1] * 0.6, ret.extents[2] * 0.6)
+def spiral_segment(parent):
+    parent.name = "rectangle"
 
-    ret.children.append(e_thruster_bumps)
+    ret = parent.copy()
+    ret.name = "spiral_segment"
+    ret.position = parent.corner_relative(1.5,2,1)
     
     return [ret]
