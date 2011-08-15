@@ -48,6 +48,9 @@ class Node:
         #this number indicates when the node should be added into the voxel grid. Higher means sooner.
         self.priority = in_priority
 
+        #this is used to make a node's orientation reset to the global coordinate system, rather than it's parent's local coordinate system
+        self.reset_orientation = False
+
     def toString(self, computer_readable = False, verbose = True):
         """This method returns a string representation of the current node, if verbose is true, all
         attributes are included in the string, if not, then only a summary string is returned. If the second
@@ -576,7 +579,8 @@ def updateNodePositionsRelative(root):
         #update their positions to be relative to their parent
         i.position = (i.position * root.orientation) + root.position
         #update their orientation to be relative to their parent
-        i.orientation = root.orientation * i.orientation
+        if i.reset_orientation != True:
+            i.orientation = root.orientation * i.orientation
     
     #loop through the children of the node
     for i in root.children:
