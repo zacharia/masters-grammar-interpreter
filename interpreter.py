@@ -310,7 +310,7 @@ def handle_args(args):
     """this takes the raw input arguments and returns a dictionary of the option names mapped
     onto their values"""
     #dictionary containing default values
-    options = {"input_file" : None, "output_file" : None, "max_iterations" : -1, "parallel_execution" : False, "verbose" : False, "quiet" : False, "relative_coordinates" : True}
+    options = {"input_file" : None, "output_file" : None, "max_iterations" : -1, "parallel_execution" : False, "verbose" : False, "quiet" : False, "relative_coordinates" : True, "axiom_name" : ""}
 
     #while args is non-empty
     while args:
@@ -342,6 +342,10 @@ def handle_args(args):
         elif args[0] == "-a":
             options["relative_coordinates"] = False
             args = args[1:]
+        #this flag is the name of the axiom to start from when interpreting the input grammar (it can also be specified in the file, but being able to specify it here is useful and convenient.)
+        elif args[0] == "-x":
+            options["axiom_name"] = args[1]
+            args = args[2:]
         else:
             print "unrecognized argument: %s" % args[0]
             args = args[1:]
@@ -349,7 +353,7 @@ def handle_args(args):
     #return dictionary of options
     return options
 
-def get_input(infile):
+def get_input(infile, axiom_name):
     """this method reads the input file's contents and evals them."""
     if infile != None:
         input = open(infile, "r")
@@ -362,6 +366,15 @@ def get_input(infile):
     
     #this does an eval of everything in code and puts it into the global symbol table thing
     exec code in globals()
+
+    #now check if the axiom name spec'd as a command line argument
+    #exists in the input file (its passed as the second argument to
+    #this method). If it's not, then the assert fails and the program
+    #quits. Also, first check that the axiom name isn't the empty
+    #string (if it is, then the axiom should be specified in the input
+    #grammar)
+    if axiom_name != "":
+        assert axiom_name in globals()
     
     
 def hasNonTerminals(root):
@@ -615,11 +628,19 @@ if __name__ == "__main__":
         if options["relative_coordinates"]:
             print "relative coordinates"
         else:
-            print "absolute coordinates"        
+            print "absolute coordinates"
+        print "axiom name: %s" % options["axiom_name"]
         print "\n"
 
+    #if the axiom_name was specified as a command line argument
+    #(i.e. it's not ""), then create a Node called axiom, with the
+    #argument's value as it's name variable (this will be the axiom
+    #for the grammar).
+    if options["axiom_name"] != "":
+        axiom = Node(options["axiom_name"])
+
     #get the input file
-    get_input(options["input_file"])
+    get_input(options["input_file"], options["axiom_name"])
 
     if options["verbose"]:
         print "AXIOM:\n" + axiom.displayTree()

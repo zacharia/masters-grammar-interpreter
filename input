@@ -6,7 +6,7 @@
 #axiom = Node("squid_ship") #10 iterations works nicely
 #axiom = Node("borg_cube")
 #axiom = Node("testing")
-axiom = Node("enterprise")
+#axiom = Node("enterprise")
 
 #=============================reflection stuff
 
