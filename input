@@ -223,6 +223,7 @@ def enterprise_thruster(parent):
 
 #==============================
 #the spiral
+# -m 50 makes a nice spiral
 
 initial_rectangle_dimensions = vec3(5,10,5)
 
@@ -232,6 +233,8 @@ def spiral(parent):
     ret = Node("spiral_segment")
     ret.extents = initial_rectangle_dimensions
     ret.position = vec3(0,0,0)
+    ret.orientation = mat3.rotation(math.pi, vec3(0,0,1))
+    ret.counter = 1
     
     return [ret]
 
@@ -240,6 +243,51 @@ def spiral_segment(parent):
 
     ret = parent.copy()
     ret.name = "spiral_segment"
-    ret.position = parent.corner_relative(1.5,2,1)
+    ret.position = parent.corner_relative(1.35,1.75,1)
+    ret.counter = parent.counter * 0.95
+    ret.orientation = mat3.rotation(ret.counter * math.pi / 4, vec3(0,0,1))
     
+    return [ret]
+
+#================================
+#the fractal tree
+
+tree_initial_rectangle_size = vec3(5,15,5)
+
+def fractal_tree(parent):
+    parent.active = False
+
+    ret = Node("fractal_tree_segment")
+    ret.extents = tree_initial_rectangle_size
+    ret.position = vec3(0,0,0)
+    ret.counter = 1
+    
+    return [ret]
+
+def fractal_tree_segment(parent):
+    parent.name = "rectangle"
+
+    ret = parent.copy()
+    ret.name = "fractal_tree_segment"
+    ret.extents = 0.6666 * ret.extents
+
+    ret_left = ret.copy()
+    ret_right = ret.copy()
+    
+    ret_left.position = parent.corner_relative(-1,1,0) + vec3(-ret_left.extents[1],0,0)
+    ret_right.position = parent.corner_relative(1,1,0) + vec3(ret_right.extents[1],0,0)
+    
+    ret_left.orientation = mat3.rotation(-math.pi / 2, vec3(0,0,1))
+    ret_right.orientation = mat3.rotation(math.pi / 2, vec3(0,0,1))
+    
+    return [ret_left, ret_right]
+
+#====================================
+# flat block (for hopefully doing CA patterns on)
+
+def flat_rectangle(parent):
+    parent.active = False
+    ret = Node("rectangle")
+    ret.extents = vec3(100, 100, 5)
+
     return [ret]
