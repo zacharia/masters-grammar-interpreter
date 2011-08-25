@@ -1,4 +1,4 @@
-axiom = Node("space_station")
+#axiom = Node("space_station")
 #axiom = Node("klingon")
 #axiom = Node("spike_ship")
 #axiom = Node("wing_ship")
@@ -331,7 +331,7 @@ def tie_fighter(parent):
     body = Node("ellipsoid", vec3(0,0,0), vec3(30,30,30), mat3(1.0))
 
     wing = Node("tf_wing", vec3(50,0,0), vec3(10,20,10), mat3.rotation(math.pi / 2.0, vec3(0,0,1)))
-    wing.setSymmetry("rotational", vec3(0,0,0), vec3(0,0,1), 2)
+    wing.setSymmetry("rotational", vec3(0,0,0), vec3(0,0,1), random.randint(2,5))
 
     return [body, wing]
 
