@@ -291,3 +291,20 @@ def flat_rectangle(parent):
     ret.extents = vec3(100, 100, 5)
 
     return [ret]
+
+#=========================================
+#some basic cloud shapes I whipped up for Wei-Chen, to see if he was
+#interested in using my program to generate data sets for his stuff
+
+def clouds(parent):
+    parent.active = False
+    num_objects = 10
+    ret = []
+
+    for i in range(10):
+        shape = Node("ellipsoid")
+        shape.extents = vec3(random.randint(10,50), random.randint(10,50), random.randint(10,50))
+        shape.position = vec3(random.randint(-100,100), random.randint(-100,100), random.randint(-100,100))
+        ret.append(shape)
+
+    return ret
