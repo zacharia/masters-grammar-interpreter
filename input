@@ -308,3 +308,42 @@ def clouds(parent):
         ret.append(shape)
 
     return ret
+
+#===========================================
+# a building, done in the split grammar style.
+
+def skyscraper(parent):
+    parent.active = False
+    
+    ret = Node("building_base")
+    ret.extents = vec3(random.randint(50,100), random.randint(0,100), random.randint(0,100))
+
+    return [ret]
+
+def building_base(parent):
+    parent.name = "building_floor"
+
+    num_splits = random.randint(5,20)
+    parent.splitNode("y", num_splits)
+
+    return []
+
+def building_floor(parent):
+    parent.name = "building_room"
+
+    num_splits = random.randint(2,4)
+    if random.random() <= 0.5:
+        parent.splitNode("x", num_splits)
+    else:
+        parent.splitNode("z", num_splits)
+
+    return []
+
+def building_room(parent):
+    parent.name = "rectangle"
+    value = random.random()
+    the_tag = "col_%f" % value
+    print the_tag
+    parent.tags.append(the_tag)
+
+    return []
