@@ -232,8 +232,10 @@ def c_station(parent):
     parent.active = False
     #make a nice central cylinder
     central_spire = Node("cs_central_spire", vec3(0,0,0), vec3(25,200,25), mat3(1.0))
+    central_spire.tags.append("central_spire")
 
     wing = Node("cs_wing", vec3(100,0,0), vec3(100,75,50), mat3(1.0))
+    wing.tags.append("wing")
     wing.setSymmetry("rotational", vec3(0,0,0), vec3(0,1,0), 3)
     
     return [central_spire, wing]
@@ -242,10 +244,12 @@ def cs_wing(parent):
     parent.name = "ellipsoid"
 
     indentation = Node("cs_wing_indentation", parent.position + vec3(10,0,40), vec3(90,40,20), mat3(1.0))
+    indentation.tags.append("indent")
     indentation.setSymmetry("reflective", parent.position, vec3(0,0,1))
     indentation.priority = -3
 
     wing_hole = Node("cylinder", parent.position + vec3(50,0,0), vec3(40,40,40), mat3.rotation(math.pi / 2, vec3(1,0,0)))
+    wing_hole.tags.append("indent")
     wing_hole.additive = False
     wing_hole.priority = -2
     dock_area = Node("rectangle", wing_hole.position + vec3(-50,20,0), vec3(30,10,10), mat3(1.0))
