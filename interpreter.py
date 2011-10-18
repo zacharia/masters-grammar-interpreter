@@ -7,6 +7,7 @@ from cgkit.cgtypes import *
 import copy
 import math
 import random
+import datetime
 
 #==========================class definitions
 
@@ -310,7 +311,7 @@ def handle_args(args):
     """this takes the raw input arguments and returns a dictionary of the option names mapped
     onto their values"""
     #dictionary containing default values
-    options = {"input_file" : None, "output_file" : None, "max_iterations" : -1, "parallel_execution" : False, "verbose" : False, "quiet" : False, "relative_coordinates" : True, "axiom_name" : ""}
+    options = {"input_file" : None, "output_file" : None, "max_iterations" : -1, "parallel_execution" : False, "verbose" : False, "quiet" : False, "relative_coordinates" : True, "axiom_name" : "", "display_timing" : False}
 
     #while args is non-empty
     while args:
@@ -346,6 +347,10 @@ def handle_args(args):
         elif args[0] == "-x":
             options["axiom_name"] = args[1]
             args = args[2:]
+        # if this flag is set, timing info is diplayed in the program's output
+        elif args[0] == "-st":
+            options["display_timing"] = True
+            args = args[1:]
         else:
             print "unrecognized argument: %s" % args[0]
             args = args[1:]
@@ -607,11 +612,14 @@ def updateNodePositionsRelative(root):
 #starting symbol, and a method per grammar rule with the same name as the LHS of the rule.
 
 if __name__ == "__main__":
+
+    time_start = datetime.datetime.now()
+    
     #get the arguments into args
     args = sys.argv[1:]
 
     #parse the arguments
-    options = handle_args(args)
+    options = handle_args(args)    
 
     random.seed()
 
@@ -662,3 +670,9 @@ if __name__ == "__main__":
 
     if not options["quiet"]:
         print result.displayActiveNodes()
+
+    #display timing output, if so specified
+    if options["display_timing"]:
+        time_end = datetime.datetime.now()
+        time_to_run = time_end - time_start
+        print "TIME TO RUN:\ndays: %d \nseconds: %d \nmicroseconds: %d" % (time_to_run.days, time_to_run.seconds, time_to_run.microseconds)
