@@ -378,3 +378,108 @@ def skyscraper_geometry(parent):
     return []
 
 
+#===========================================
+# a simple tank, for use with the camoflauge pattern.
+# the commented out lines are for trying to do fancy rotations, which I'm not working on any more.
+
+tank_body_length = 100
+tank_body_width = 60
+tank_body_height = 15
+tank_position = vec3(0,0,0)
+
+#relative to body
+tank_turret_offset = vec3(0, 1.5, -0.25)
+tank_turret_size_factor = vec3(0.75, 1, 0.75)
+#tank_turret_angle = math.pi / 4
+
+#relative to the body
+tank_tread_offset = vec3(0.6, -1, 0)
+tank_tread_size_factor = vec3(0.25, 1, 0.75)
+
+#relative to the body length
+tank_gun_size_factor = vec3(0.05, 0.5, 0.05)
+tank_gun_offset = vec3(0, 0.25, 0)
+tank_double_guns = False
+#tank_gun_angle = math.pi / 2
+
+#relative to the gun
+tank_gun_tip_size_factor = vec3(2, 0.2, 1.25)
+tank_gun_tip_offset = vec3(0, 1, 0)
+tank_gun_shape = "cylinder"
+
+def tank(parent):
+    parent.active = False
+
+    ret = Node("tank_main_body")
+    ret.extents = vec3(tank_body_width, tank_body_height, tank_body_length)
+    ret.position = tank_position
+    ret.tags.append("main_body")
+    ret.priority = 0
+
+    return [ret]
+
+def tank_main_body(parent):
+    parent.name = "rectangle"
+
+    front_indentation = Node("tank_indentation")
+    front_indentation.extents = vec3(tank_body_width, tank_body_height, tank_body_height)
+    front_indentation.position = parent.corner_relative(0,-1,1)
+    front_indentation.orientation = mat3.rotation(math.pi / 4, vec3(1,0,0))
+    front_indentation.setSymmetry("reflective", tank_position, vec3(0,0,1))
+    front_indentation.additive = False
+    front_indentation.priority = -1
+
+    turret = Node("tank_turret")
+    turret.extents = vec3(tank_body_width * tank_turret_size_factor[0], tank_body_height * tank_turret_size_factor[1], tank_body_width * tank_turret_size_factor[2])
+    turret.position = parent.corner_relative(tank_turret_offset[0], tank_turret_offset[1], tank_turret_offset[2])
+    #turret.orientation = mat3.rotation(tank_turret_rotation, vec3(0,1,0))
+    turret.tags.append("turret")
+
+    tread = Node("tank_tread")
+    tread.extents = vec3(tank_body_height * tank_tread_size_factor[1], tank_body_width * tank_tread_size_factor[0], tank_body_length * tank_tread_size_factor[2])
+    tread.position = parent.corner_relative(tank_tread_offset[0], tank_tread_offset[1], tank_tread_offset[2])
+    tread.setSymmetry("reflective", parent.position, vec3(1,0,0))
+    tread.orientation = mat3.rotation(math.pi / 2, vec3(0,0,1))
+    turret.tags.append("tread")
+    
+    return [front_indentation, turret, tread]
+
+def tank_indentation(parent):
+    parent.name = "rectangle"
+
+    return []
+
+def tank_turret(parent):
+    parent.name = "ellipsoid"
+
+    gun = Node("tank_gun")
+    gun.extents = vec3(tank_body_length * tank_gun_size_factor[0], tank_body_length * tank_gun_size_factor[1], tank_body_length * tank_gun_size_factor[2])
+    gun.position = vec3(0,0,gun.extents[1]) + parent.corner_relative(tank_gun_offset[0], tank_gun_offset[1], tank_gun_offset[2])
+    #gun.position[1] = gun.position[1] + math.sin(tank_gun_angle)
+    #gun.position[2] = gun.position[2] + math.cos(tank_gun_angle)
+    gun.orientation = mat3.rotation(-math.pi / 2, vec3(1,0,0))# * mat3.rotation(tank_gun_angle, vec3(1,0,0))
+    gun.tags.append("gun")
+    if tank_double_guns:
+        gun.setSymmetry("reflective", parent.position, vec3(1,0,0))
+
+    return [gun]
+
+def tank_tread(parent):
+    parent.name = "cylinder"
+
+    return []
+
+def tank_gun(parent):
+    parent.name = "cylinder"
+
+    gun_tip = Node("tank_gun_tip")
+    gun_tip.extents = vec3(parent.extents[0] * tank_gun_tip_size_factor[0], parent.extents[1] * tank_gun_tip_size_factor[1], parent.extents[2] * tank_gun_tip_size_factor[2])
+    gun_tip.position = parent.corner_relative(tank_gun_tip_offset[0], tank_gun_tip_offset[1], tank_gun_tip_offset[2])
+    gun_tip.tags.append("gun_tip")
+
+    return [gun_tip]
+
+def tank_gun_tip(parent):
+    parent.name = tank_gun_shape
+
+    return []
