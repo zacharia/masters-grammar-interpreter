@@ -483,3 +483,102 @@ def tank_gun_tip(parent):
     parent.name = tank_gun_shape
 
     return []
+
+#===========================================
+# a castle wall
+
+castle_wall_extents = vec3(500, 100, 50)
+
+castle_tower_extents = vec3(100, 300, 100)
+castle_tower_position_relative = vec3(-1,0,0)
+castle_tower_mirror = True
+
+castle_gate_extents = vec3(50, 50, castle_tower_extents[2])
+castle_gate_position_relative = vec3(0,0,0)
+castle_gate_mirror = False
+
+#relative to wall
+castle_battlements_scale_factor = vec3(1, 0.3, 0.3)
+castle_battlements_double_sided = True
+
+#relative to tower
+castle_tower_battlements_scale_factor = vec3(1.33333, 0.2, 1.33333)
+
+def castle(parent):
+    parent.active = False
+
+    wall = Node("castle_wall")
+    wall.extents = castle_wall_extents
+    wall.position = vec3(0, castle_wall_extents.y / 2.0, castle_wall_extents.x)
+    wall.tags.append("castle_wall")
+    wall.priority = 0
+
+    wall.setSymmetry("rotational", vec3(0,0,0), vec3(0, 1, 0), 4)
+    
+    return [wall]
+
+def castle_wall(parent):
+    parent.name = "rectangle"
+
+    tower = Node("castle_tower")
+    tower.extents = castle_tower_extents
+    tower.position = parent.corner_relative(castle_tower_position_relative[0], castle_tower_position_relative[1], castle_tower_position_relative[2])
+    tower.position[1] = tower.position[1] + tower.extents[1] - parent.extents[1]
+    tower.tags.append("castle_tower")
+    if castle_tower_mirror:
+        tower.setSymmetry("reflective", parent.position, vec3(1,0,0))
+
+    battlements = Node("castle_battlements")
+    battlements.extents = vec3(castle_wall_extents[0] * castle_battlements_scale_factor[0], castle_wall_extents[1] * castle_battlements_scale_factor[1], castle_wall_extents[2] * castle_battlements_scale_factor[2])
+    battlements.position = parent.corner_relative(0,1,1)
+    battlements.tags.append("castle_battlements")
+    if castle_battlements_double_sided:
+        battlements.setSymmetry("reflective", parent.position, vec3(0,0,1))
+
+    gate = Node("castle_gate")
+    gate.extents = castle_gate_extents
+    gate.extents[1] = gate.extents[1] * 0.66666
+    gate.position = parent.corner_relative(castle_gate_position_relative[0], castle_gate_position_relative[1], castle_gate_position_relative[2])
+    gate.position[1] = gate.position[1] + gate.extents[1] - parent.extents[1]
+    gate.tags.append("castle_gate")
+    if castle_gate_mirror:
+        gate.setSymmetry("reflective", parent.position, vec3(1,0,0))
+    gate.additive = False
+
+    return [tower, battlements, gate]
+
+def castle_tower(parent):
+    parent.name = "cylinder"
+
+    tower_battlements = Node("castle_tower_battlements")
+    tower_battlements.position = parent.corner_relative(0,1,0)
+    tower_battlements.extents = vec3(parent.extents[0] * castle_tower_battlements_scale_factor[0], parent.extents[1] * castle_tower_battlements_scale_factor[1], parent.extents[2] * castle_tower_battlements_scale_factor[2])
+    
+    return [tower_battlements]
+
+def castle_battlements(parent):
+    parent.name = "rectangle"
+
+    return []
+
+def castle_tower_battlements(parent):
+    parent.name = "cylinder"
+    
+    subtractive_area = Node("cylinder")
+    subtractive_area.additive = False
+    subtractive_area.position = parent.corner_relative(0,1,0)
+    subtractive_area.extents = vec3(parent.extents[0] * 0.8, parent.extents[1] * 0.5, parent.extents[2] * 0.8)
+    subtractive_area.priority = parent.priority - 1
+
+    return [subtractive_area]
+
+def castle_gate(parent):
+    parent.name = "rectangle"
+
+    arch = Node("cylinder")
+    arch.orientation = mat3.rotation(math.pi / 2, vec3(1,0,0))
+    arch.extents = vec3(parent.extents[0], parent.extents[2], parent.extents[0])
+    arch.position = parent.corner_relative(0,1,0)
+    arch.additive = False
+    
+    return [arch]
