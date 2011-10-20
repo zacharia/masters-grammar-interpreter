@@ -171,7 +171,7 @@ def enterprise_body(parent):
     e_wing.setSymmetry("reflective", vec3(0,0,0), vec3(1,0,0))
     #e_wing.orientation = e_wing.orientation * mat3.rotation(math.pi / 6, vec3(0,1,0))
     #e_wing.orientation = e_wing.orientation * mat3.rotation(math.pi / 4, vec3(-1,1,0))
-    # e_wing.tags.append("wing")
+    e_wing.tags.append("wing")
     # if e_thruster_number == 2:
     #     e_wing.setSymmetry("reflective", vec3(0,0,0), vec3(1,0,0))
     #     e_wing.position = vec3(30, e_disk_radius / 3, e_disk_radius / 3)
@@ -182,7 +182,7 @@ def enterprise_body(parent):
     e_body_front_extension = Node("cylinder")
     e_body_front_extension.position = parent.corner_relative(0,1,0)
     e_body_front_extension.extents = vec3(parent.extents[0] * 0.75, parent.extents[1] * 0.1, parent.extents[2] * 0.75)
-    e_body_front_extension.tags.append("body")
+    e_body_front_extension.tags.append("body_extension")
 
     e_body_back_subtraction = Node("cylinder")
     e_body_back_subtraction.position = parent.corner_relative(0,-1,-1)
@@ -217,7 +217,7 @@ def enterprise_thruster(parent):
     e_thruster_bumps = parent.copy()
     e_thruster_bumps.position = vec3(0,0,-parent.extents[2] * 0.333)
     e_thruster_bumps.extents = vec3(parent.extents[0] * 1.5, parent.extents[1] * 0.6, parent.extents[2] * 0.6)
-    e_thruster_bumps.tags.append("thruster")
+    e_thruster_bumps.tags.append("thruster_bumps")
     
     return [e_thruster_bumps]
 
@@ -553,6 +553,7 @@ def castle_tower(parent):
     tower_battlements = Node("castle_tower_battlements")
     tower_battlements.position = parent.corner_relative(0,1,0)
     tower_battlements.extents = vec3(parent.extents[0] * castle_tower_battlements_scale_factor[0], parent.extents[1] * castle_tower_battlements_scale_factor[1], parent.extents[2] * castle_tower_battlements_scale_factor[2])
+    tower_battlements.tags.append("tower_battlements")
     
     return [tower_battlements]
 
@@ -569,6 +570,7 @@ def castle_tower_battlements(parent):
     subtractive_area.position = parent.corner_relative(0,1,0)
     subtractive_area.extents = vec3(parent.extents[0] * 0.8, parent.extents[1] * 0.5, parent.extents[2] * 0.8)
     subtractive_area.priority = parent.priority - 1
+    subtractive_area.tags.append("tower_battlements_subtractive_area")
 
     return [subtractive_area]
 
@@ -580,5 +582,6 @@ def castle_gate(parent):
     arch.extents = vec3(parent.extents[0], parent.extents[2], parent.extents[0])
     arch.position = parent.corner_relative(0,1,0)
     arch.additive = False
+    arch.tags.append("gate_subtractive_area")
     
     return [arch]
