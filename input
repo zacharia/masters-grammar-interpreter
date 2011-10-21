@@ -487,24 +487,59 @@ def tank_gun_tip(parent):
 #===========================================
 # a castle wall
 
-castle_keep_extents = vec3(random.randint(300,500), random.randint(50,150), random.randint(300,500))
-castle_keep_offset = vec3(0, 0, 0)
+castle_keep_extents = vec3(random.randint(300,500), random.randint(50,500), random.randint(300,500))
+
+castle_keep_centralized = False
+if random.randint(1,2) > 1:
+    castle_keep_centralized = True
+else:
+    castle_keep_centralized = False
+    
+castle_keep_offset = vec3(random.uniform(0,0.25), random.uniform(0,0.25), random.uniform(0,0.25))
+castle_keep_wall_bordering = vec3(random.randint(-1,1), 0, random.randint(-1,1))
+
 castle_keep_central_tower = True
+if random.randint(1,2) > 1:
+    castle_keep_central_tower = True
+else:
+    castle_keep_central_tower = False
+    
 castle_keep_corner_towers = [True, True, True, True]
+for i in range(4):
+    if random.randint(1,2) <= 1:
+        castle_keep_corner_towers[i] = True
+    else:
+        castle_keep_corner_towers[i] = False
 
-castle_wall_extents = vec3(750, 100, 50)
+castle_top_wall_extents = vec3(random.randint(750,1500), 100, 50)
+castle_side_wall_extents = vec3(random.randint(750,1500), 100, 50)
+castle_wall_height = random.randint(100,250)
 
-castle_tower_extents = vec3(100, 300, 100)
+castle_tower_width = random.randint(100,200)
+castle_tower_extents = vec3(castle_tower_width, random.randint(300,500), castle_tower_width)
 castle_tower_position_relative = vec3(-1,0,0)
+if random.randint(1,2) > 1:
+    castle_tower_position_relative = vec3(random.uniform(-1,0),0,random.uniform(-1,1))
+
 castle_tower_mirror = True
+if random.randint(1,3) <= 1:
+    castle_tower_mirror = False
 
 castle_gate_extents = vec3(50, 50, castle_tower_extents[2])
+
 castle_gate_position_relative = vec3(0,0,0)
+if random.randint(1,2) > 1:
+    castle_gate_position_relative = vec3(random.uniform(-1,-0.33333),0,0)
+
 castle_gate_mirror = False
+if random.randint(1,3) <= 1:
+    castle_gate_mirror = True
 
 #relative to wall
 castle_battlements_scale_factor = vec3(1, 0.3, 0.3)
 castle_battlements_double_sided = True
+if random.randint(1,3) <= 1:
+    castle_battlements_double_sided = False
 
 #relative to tower
 castle_tower_battlements_scale_factor = vec3(1.33333, 0.2, 1.33333)
@@ -512,25 +547,35 @@ castle_tower_battlements_scale_factor = vec3(1.33333, 0.2, 1.33333)
 def castle(parent):
     parent.active = False
 
-    #ground_subtractive_thing = Node("rectangle")
-    #ground_subtractive_thing.extents = castle_wall_extents
-
     keep = Node("castle_keep")
     keep.extents = castle_keep_extents
-    keep.position = castle_keep_offset
-    keep.position[1] = castle_keep_extents[1]
+    if castle_keep_centralized:
+        keep.position = castle_keep_offset
+        keep.position = vec3(castle_top_wall_extents.x * castle_keep_offset[0] + castle_keep_extents[0] * -castle_keep_offset[0], 0, castle_side_wall_extents.x * castle_keep_offset[2] + castle_keep_extents[2] * -castle_keep_offset[2])
+    else:
+        keep.position = vec3(castle_top_wall_extents.x * castle_keep_wall_bordering[0] + castle_keep_extents[0] * -castle_keep_wall_bordering[0], 0, castle_side_wall_extents.x * castle_keep_wall_bordering[2] + castle_keep_extents[2] * -castle_keep_wall_bordering[2])
+    keep.position[1] = keep.extents[1]
     keep.tags.append("castle_keep")
     keep.priority = 0
 
-    wall = Node("castle_wall")
-    wall.extents = castle_wall_extents
-    wall.position = vec3(0, castle_wall_extents.y / 2.0, castle_wall_extents.x)
-    wall.tags.append("castle_wall")
-    wall.priority = 0
+    top_wall = Node("castle_wall")
+    top_wall.extents = castle_top_wall_extents
+    top_wall.extents.y = castle_wall_height
+    top_wall.position = vec3(0, castle_wall_height, castle_side_wall_extents.x)
+    top_wall.tags.append("castle_wall")
+    top_wall.priority = 0
+    top_wall.setSymmetry("reflective", vec3(0,0,0), vec3(0, 0, 1))
 
-    wall.setSymmetry("rotational", vec3(0,0,0), vec3(0, 1, 0), 4)
-    
-    return [wall, keep]
+    side_wall = Node("castle_wall")
+    side_wall.extents = castle_side_wall_extents
+    side_wall.extents.y = castle_wall_height
+    side_wall.position = vec3(castle_top_wall_extents.x, castle_wall_height, 0)
+    side_wall.orientation = mat3.rotation(math.pi / 2, vec3(0,1,0))
+    side_wall.tags.append("castle_wall")
+    side_wall.priority = 0
+    side_wall.setSymmetry("reflective", vec3(0,0,0), vec3(1, 0, 0))
+        
+    return [top_wall, side_wall, keep]
 
 def castle_wall(parent):
     parent.name = "rectangle"
@@ -544,7 +589,7 @@ def castle_wall(parent):
         tower.setSymmetry("reflective", parent.position, vec3(1,0,0))
 
     battlements = Node("castle_battlements")
-    battlements.extents = vec3(castle_wall_extents[0] * castle_battlements_scale_factor[0], castle_wall_extents[1] * castle_battlements_scale_factor[1], castle_wall_extents[2] * castle_battlements_scale_factor[2])
+    battlements.extents = vec3(parent.extents[0] * castle_battlements_scale_factor[0], parent.extents[1] * castle_battlements_scale_factor[1], parent.extents[2] * castle_battlements_scale_factor[2])
     battlements.position = parent.corner_relative(0,1,1)
     battlements.tags.append("castle_battlements")
     if castle_battlements_double_sided:
@@ -642,5 +687,11 @@ def castle_keep(parent):
             corner_tower.position = parent.corner_relative(t_pos[0], 0, t_pos[2])
             corner_tower.position[1] = -parent.extents[1] + corner_tower.extents[1]
             ret.append(corner_tower)
-
+            
+    ground_subtractive_thing = Node("rectangle")
+    ground_subtractive_thing.extents = parent.extents
+    ground_subtractive_thing.position = vec3(0, -ground_subtractive_thing.extents[1] * 2, 0)
+    ground_subtractive_thing.additive = False
+    ret.append(ground_subtractive_thing)
+            
     return ret
