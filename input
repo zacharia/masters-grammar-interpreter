@@ -487,7 +487,12 @@ def tank_gun_tip(parent):
 #===========================================
 # a castle wall
 
-castle_wall_extents = vec3(500, 100, 50)
+castle_keep_extents = vec3(random.randint(300,500), random.randint(50,150), random.randint(300,500))
+castle_keep_offset = vec3(0, 0, 0)
+castle_keep_central_tower = True
+castle_keep_corner_towers = [True, True, True, True]
+
+castle_wall_extents = vec3(750, 100, 50)
 
 castle_tower_extents = vec3(100, 300, 100)
 castle_tower_position_relative = vec3(-1,0,0)
@@ -507,6 +512,16 @@ castle_tower_battlements_scale_factor = vec3(1.33333, 0.2, 1.33333)
 def castle(parent):
     parent.active = False
 
+    #ground_subtractive_thing = Node("rectangle")
+    #ground_subtractive_thing.extents = castle_wall_extents
+
+    keep = Node("castle_keep")
+    keep.extents = castle_keep_extents
+    keep.position = castle_keep_offset
+    keep.position[1] = castle_keep_extents[1]
+    keep.tags.append("castle_keep")
+    keep.priority = 0
+
     wall = Node("castle_wall")
     wall.extents = castle_wall_extents
     wall.position = vec3(0, castle_wall_extents.y / 2.0, castle_wall_extents.x)
@@ -515,7 +530,7 @@ def castle(parent):
 
     wall.setSymmetry("rotational", vec3(0,0,0), vec3(0, 1, 0), 4)
     
-    return [wall]
+    return [wall, keep]
 
 def castle_wall(parent):
     parent.name = "rectangle"
@@ -567,8 +582,8 @@ def castle_tower_battlements(parent):
     
     subtractive_area = Node("cylinder")
     subtractive_area.additive = False
-    subtractive_area.position = parent.corner_relative(0,1,0)
-    subtractive_area.extents = vec3(parent.extents[0] * 0.8, parent.extents[1] * 0.5, parent.extents[2] * 0.8)
+    subtractive_area.extents = vec3(parent.extents[0] * 0.8, parent.extents[1] * 2, parent.extents[2] * 0.8)
+    subtractive_area.position = parent.corner_relative(0,2,0)
     subtractive_area.priority = parent.priority - 1
     subtractive_area.tags.append("tower_battlements_subtractive_area")
 
@@ -585,3 +600,47 @@ def castle_gate(parent):
     arch.tags.append("gate_subtractive_area")
     
     return [arch]
+
+def castle_keep(parent):
+    parent.name = "rectangle"
+
+    ret = []
+
+    roof = Node("rectangle")
+    roof.orientation = mat3.rotation(math.pi / 4, vec3(0,0,1))
+    roof.extents = vec3(parent.extents[0] / 2.0, parent.extents[0] / 2.0, parent.extents[2])
+    roof.position = parent.corner_relative(0,1,0)    
+    roof.tags.append("keep_roof")
+
+    ret.append(roof)
+
+    central_tower = Node("castle_tower")
+    central_tower.extents = castle_tower_extents
+    central_tower.position = parent.corner_relative(0,1,0) + vec3(0,castle_tower_extents[1],0)
+    central_tower.tags.append("keep_tower")
+    if castle_keep_central_tower:
+        ret.append(central_tower)
+
+    count = 0
+    for i in castle_keep_corner_towers:
+        count = count + 1
+        if i:
+            corner_tower = Node("castle_tower")
+            corner_tower.extents = castle_tower_extents
+            corner_tower.tags.append("keep_tower")
+            
+            t_pos = vec3(0,0,0)
+            if count == 1:
+                t_pos = vec3(-1,0,-1)
+            elif count == 2:
+                t_pos = vec3(-1,0,1)
+            elif count == 3:
+                t_pos = vec3(1,0,-1)
+            elif count == 4:
+                t_pos = vec3(1,0,1)
+                
+            corner_tower.position = parent.corner_relative(t_pos[0], 0, t_pos[2])
+            corner_tower.position[1] = -parent.extents[1] + corner_tower.extents[1]
+            ret.append(corner_tower)
+
+    return ret
