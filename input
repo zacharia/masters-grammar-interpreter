@@ -382,30 +382,54 @@ def skyscraper_geometry(parent):
 # a simple tank, for use with the camoflauge pattern.
 # the commented out lines are for trying to do fancy rotations, which I'm not working on any more.
 
-tank_body_length = 100
-tank_body_width = 60
-tank_body_height = 15
+#the lower parameters for these three dimensions are the original ones I used when making the model.
+tank_body_length = random.randint(100, 180)
+tank_body_width = random.randint(60, 100)
+tank_body_height = random.randint(15, 35)
 tank_position = vec3(0,0,0)
 
+tank_body_bump_size_factor = vec3(random.uniform(0.5, 0.9), random.uniform(0.1, 0.3), random.uniform(0.5,0.9))
+
+tank_side_indentation_offset = random.uniform(-1,1)
+tank_side_indentation_length = random.uniform(0.5, 1.5)
+tank_side_indentation_rotation = math.pi / 4 * random.uniform(0.5, 1.5)
+
 #relative to body
-tank_turret_offset = vec3(0, 1.5, -0.25)
-tank_turret_size_factor = vec3(0.75, 1, 0.75)
-#tank_turret_angle = math.pi / 4
+tank_turret_offset = vec3(random.uniform(-0.5,0.5), 1.5, random.uniform(-0.75, 0.75))
+tank_turret_size_factor = vec3(random.uniform(0.5,0.75), random.uniform(0.5,0.8), random.uniform(0.5,0.75))
+tank_turret_double = False
+if random.randint(1,2) <= 1:
+    tank_turret_size_factor = vec3(random.uniform(0.3,0.5), random.uniform(0.3,0.5), random.uniform(0.3,0.8))
+    tank_turret_offset = vec3(random.uniform(0.5,0.8), 1.5, random.uniform(-0.75, 0.8))
+    tank_turret_double = True
 
 #relative to the body
-tank_tread_offset = vec3(0.6, -1, 0)
-tank_tread_size_factor = vec3(0.25, 1, 0.75)
+tank_tread_offset = vec3(random.uniform(0.4,0.8), -1, random.uniform(-0.5, 0.5))
+tank_tread_size_factor = vec3(0.25, 1, random.uniform(0.75, 1.1))
 
 #relative to the body length
-tank_gun_size_factor = vec3(0.05, 0.5, 0.05)
-tank_gun_offset = vec3(0, 0.25, 0)
+tank_gun_barrel_width = random.uniform(0.05, 0.1)
+tank_gun_size_factor = vec3(tank_gun_barrel_width, random.uniform(0.4,0.6), tank_gun_barrel_width)
+tank_gun_offset = vec3(random.uniform(-0.5,0), random.uniform(0,0.5), 0)
+
 tank_double_guns = False
-#tank_gun_angle = math.pi / 2
+if random.randint(1,2) <= 1:
+    tank_gun_size_factor = vec3(tank_gun_barrel_width * 0.6, random.uniform(0.3,0.5), tank_gun_barrel_width * 0.6)
+    tank_gun_offset = vec3(random.uniform(-0.75,0), random.uniform(0,0.5), 0)
+    tank_double_guns = True
 
 #relative to the gun
-tank_gun_tip_size_factor = vec3(2, 0.2, 1.25)
-tank_gun_tip_offset = vec3(0, 1, 0)
+tank_gun_tip_size_factor = vec3(random.uniform(0.5,1.2), random.uniform(0.2,0.5), random.uniform(0.5,1.2))
+tank_gun_tip_offset = vec3(0, random.uniform(0.5,1), 0)
 tank_gun_shape = "cylinder"
+tank_gun_tip_type = random.randint(1,3)
+if tank_gun_tip_type == 1:
+    tank_gun_shape = "rectangle"
+elif tank_gun_tip_type == 2:
+    tank_gun_shape = "ellipsoid"
+
+tank_back_area_size = vec3(random.uniform(0.3,1.1), random.uniform(0.3,0.75), random.uniform(0.1,0.3))
+tank_back_area_offset = vec3(random.uniform(-0.2,0.2), random.uniform(0.5, 0.75), random.uniform(-1,-0.8))
 
 def tank(parent):
     parent.active = False
@@ -421,28 +445,49 @@ def tank(parent):
 def tank_main_body(parent):
     parent.name = "rectangle"
 
+    top_raised_area = Node("rectangle")
+    top_raised_area.extents = vec3(parent.extents.x * tank_body_bump_size_factor.x, parent.extents.y * tank_body_bump_size_factor.y, parent.extents.z * tank_body_bump_size_factor.z)
+    top_raised_area.position = parent.corner_relative(0,1,0)
+
+    back_raised_area = Node("rectangle")
+    back_raised_area.extents = vec3(parent.extents.x * tank_back_area_size.x, parent.extents.y * tank_back_area_size.y, parent.extents.z * tank_back_area_size.z)
+    back_raised_area.position = parent.corner_relative(tank_back_area_offset.x,tank_back_area_offset.y,tank_back_area_offset.z)
+    back_raised_area.priority = -10
+    
     front_indentation = Node("tank_indentation")
     front_indentation.extents = vec3(tank_body_width, tank_body_height, tank_body_height)
     front_indentation.position = parent.corner_relative(0,-1,1)
     front_indentation.orientation = mat3.rotation(math.pi / 4, vec3(1,0,0))
     front_indentation.setSymmetry("reflective", tank_position, vec3(0,0,1))
     front_indentation.additive = False
-    front_indentation.priority = -1
-
+    front_indentation.priority = -5
+    
+    side_indentation = Node("tank_indentation")
+    side_indentation.extents = vec3(tank_body_height, tank_body_length * tank_side_indentation_length, tank_body_height)
+    side_indentation.position = parent.corner_relative(1.3,1.3,tank_side_indentation_offset)
+    side_indentation.orientation = mat3.rotation(math.pi / 2, vec3(1,0,0)) * mat3.rotation(math.pi / 4, vec3(0,0,1))
+    side_indentation.setSymmetry("reflective", tank_position, vec3(1,0,0))
+    side_indentation.additive = False
+    side_indentation.priority = -15
+    
     turret = Node("tank_turret")
     turret.extents = vec3(tank_body_width * tank_turret_size_factor[0], tank_body_height * tank_turret_size_factor[1], tank_body_width * tank_turret_size_factor[2])
     turret.position = parent.corner_relative(tank_turret_offset[0], tank_turret_offset[1], tank_turret_offset[2])
     #turret.orientation = mat3.rotation(tank_turret_rotation, vec3(0,1,0))
     turret.tags.append("turret")
+    if tank_turret_double:
+        turret.setSymmetry("reflective", tank_position, vec3(1,0,0))
+    turret.priority = -20
 
     tread = Node("tank_tread")
     tread.extents = vec3(tank_body_height * tank_tread_size_factor[1], tank_body_width * tank_tread_size_factor[0], tank_body_length * tank_tread_size_factor[2])
     tread.position = parent.corner_relative(tank_tread_offset[0], tank_tread_offset[1], tank_tread_offset[2])
     tread.setSymmetry("reflective", parent.position, vec3(1,0,0))
     tread.orientation = mat3.rotation(math.pi / 2, vec3(0,0,1))
-    turret.tags.append("tread")
+    tread.priority = -20
+    tread.tags.append("tread")
     
-    return [front_indentation, turret, tread]
+    return [front_indentation, side_indentation, turret, tread, top_raised_area, back_raised_area]
 
 def tank_indentation(parent):
     parent.name = "rectangle"
@@ -461,6 +506,7 @@ def tank_turret(parent):
     gun.tags.append("gun")
     if tank_double_guns:
         gun.setSymmetry("reflective", parent.position, vec3(1,0,0))
+    gun.priority = -20
 
     return [gun]
 
@@ -476,6 +522,7 @@ def tank_gun(parent):
     gun_tip.extents = vec3(parent.extents[0] * tank_gun_tip_size_factor[0], parent.extents[1] * tank_gun_tip_size_factor[1], parent.extents[2] * tank_gun_tip_size_factor[2])
     gun_tip.position = parent.corner_relative(tank_gun_tip_offset[0], tank_gun_tip_offset[1], tank_gun_tip_offset[2])
     gun_tip.tags.append("gun_tip")
+    gun_tip.priority = -20
 
     return [gun_tip]
 
@@ -489,10 +536,8 @@ def tank_gun_tip(parent):
 
 castle_keep_extents = vec3(random.randint(300,500), random.randint(50,500), random.randint(300,500))
 
-castle_keep_centralized = False
-if random.randint(1,2) > 1:
-    castle_keep_centralized = True
-else:
+castle_keep_centralized = True
+if random.randint(1,2) <= 1:
     castle_keep_centralized = False
     
 castle_keep_offset = vec3(random.uniform(0,0.25), random.uniform(0,0.25), random.uniform(0,0.25))
@@ -537,9 +582,9 @@ if random.randint(1,3) <= 1:
 
 #relative to wall
 castle_battlements_scale_factor = vec3(1, 0.3, 0.3)
-castle_battlements_double_sided = True
+castle_battlements_present = True
 if random.randint(1,3) <= 1:
-    castle_battlements_double_sided = False
+    castle_battlements_present = False
 
 #relative to tower
 castle_tower_battlements_scale_factor = vec3(1.33333, 0.2, 1.33333)
@@ -577,7 +622,7 @@ def castle(parent):
         
     return [top_wall, side_wall, keep]
 
-def castle_wall(parent):
+def castle_wall(parent):    
     parent.name = "rectangle"
 
     tower = Node("castle_tower")
@@ -592,9 +637,8 @@ def castle_wall(parent):
     battlements.extents = vec3(parent.extents[0] * castle_battlements_scale_factor[0], parent.extents[1] * castle_battlements_scale_factor[1], parent.extents[2] * castle_battlements_scale_factor[2])
     battlements.position = parent.corner_relative(0,1,1)
     battlements.tags.append("castle_battlements")
-    if castle_battlements_double_sided:
-        battlements.setSymmetry("reflective", parent.position, vec3(0,0,1))
-
+    battlements.setSymmetry("reflective", parent.position, vec3(0,0,1))
+        
     gate = Node("castle_gate")
     gate.extents = castle_gate_extents
     gate.extents[1] = gate.extents[1] * 0.66666
@@ -605,7 +649,10 @@ def castle_wall(parent):
         gate.setSymmetry("reflective", parent.position, vec3(1,0,0))
     gate.additive = False
 
-    return [tower, battlements, gate]
+    ret = [tower, gate]
+    if castle_battlements_present:
+        ret.append(battlements)
+    return ret
 
 def castle_tower(parent):
     parent.name = "cylinder"
@@ -692,6 +739,7 @@ def castle_keep(parent):
     ground_subtractive_thing.extents = parent.extents
     ground_subtractive_thing.position = vec3(0, -ground_subtractive_thing.extents[1] * 2, 0)
     ground_subtractive_thing.additive = False
+    ground_subtractive_thing.priority = parent.priority - 5
     ret.append(ground_subtractive_thing)
             
     return ret
