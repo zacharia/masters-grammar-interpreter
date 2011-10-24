@@ -6,7 +6,7 @@
 
 #if these variables are anything but "true", they don't get done
 DO_TIMING=true
-DO_MEM_USAGE=false
+DO_MEM_USAGE=true
 
 #this is applied to all commands, for both timing or memory
 TIMING_GLOBAL_ARGS=-st
@@ -14,7 +14,35 @@ MEM_USAGE_GLOBAL_ARGS=
 
 TESTS=(
     'python interpreter.py -i input -m 5 -p -x enterprise'
-    'python interpreter.py -i input -m 5 -p -x fractal_tree'
+    'python interpreter.py -i input -m 5 -p -x enterprise'
+    'python interpreter.py -i input -m 5 -p -x enterprise'
+    'python interpreter.py -i input -m 5 -p -x enterprise'
+    'python interpreter.py -i input -m 5 -p -x enterprise'
+
+    'python interpreter.py -i input -m 5 -p -x tank'
+    'python interpreter.py -i input -m 5 -p -x tank'
+    'python interpreter.py -i input -m 5 -p -x tank'
+    'python interpreter.py -i input -m 5 -p -x tank'
+    'python interpreter.py -i input -m 5 -p -x tank'
+
+    'python interpreter.py -i input -m 5 -p -x castle'
+    'python interpreter.py -i input -m 5 -p -x castle'
+    'python interpreter.py -i input -m 5 -p -x castle'
+    'python interpreter.py -i input -m 5 -p -x castle'
+    'python interpreter.py -i input -m 5 -p -x castle'
+
+    'python interpreter.py -i input -m 5 -p -x skyscraper'
+    'python interpreter.py -i input -m 5 -p -x skyscraper'
+    'python interpreter.py -i input -m 5 -p -x skyscraper'
+    'python interpreter.py -i input -m 5 -p -x skyscraper'
+    'python interpreter.py -i input -m 5 -p -x skyscraper'
+    
+    'python interpreter.py -i input -m 9 -p -x fractal_tree'
+    'python interpreter.py -i input -m 9 -p -x fractal_tree'
+    'python interpreter.py -i input -m 9 -p -x fractal_tree'
+    'python interpreter.py -i input -m 9 -p -x fractal_tree'
+    'python interpreter.py -i input -m 9 -p -x fractal_tree'
+
     'python interpreter.py -i input2 -m 5 -p -x space_station -a'
     'python interpreter.py -i input2 -m 5 -p -x spike_ship -a'
     'python interpreter.py -i input2 -m 5 -p -x wing_ship -a'
