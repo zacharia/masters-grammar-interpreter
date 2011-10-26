@@ -6,7 +6,7 @@
 
 #if these variables are anything but "true", they don't get done
 DO_TIMING=true
-DO_MEM_USAGE=true
+DO_MEM_USAGE=false
 
 #this is applied to all commands, for both timing or memory
 TIMING_GLOBAL_ARGS=-st
@@ -43,11 +43,40 @@ TESTS=(
     'python interpreter.py -i input -m 9 -p -x fractal_tree'
     'python interpreter.py -i input -m 9 -p -x fractal_tree'
 
-    'python interpreter.py -i input2 -m 5 -p -x space_station -a'
+    'python interpreter.py -i input2 -m 5 -p -x space_station'
+    'python interpreter.py -i input2 -m 5 -p -x space_station'
+    'python interpreter.py -i input2 -m 5 -p -x space_station'
+    'python interpreter.py -i input2 -m 5 -p -x space_station'
+    'python interpreter.py -i input2 -m 5 -p -x space_station'
+    
     'python interpreter.py -i input2 -m 5 -p -x spike_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x spike_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x spike_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x spike_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x spike_ship -a'
+    
     'python interpreter.py -i input2 -m 5 -p -x wing_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x wing_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x wing_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x wing_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x wing_ship -a'
+    
     'python interpreter.py -i input2 -m 5 -p -x c_station -a'
+    'python interpreter.py -i input2 -m 5 -p -x c_station -a'
+    'python interpreter.py -i input2 -m 5 -p -x c_station -a'
+    'python interpreter.py -i input2 -m 5 -p -x c_station -a'
+    'python interpreter.py -i input2 -m 5 -p -x c_station -a'
+    
     'python interpreter.py -i input2 -m 5 -p -x rotational_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x rotational_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x rotational_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x rotational_ship -a'
+    'python interpreter.py -i input2 -m 5 -p -x rotational_ship -a'
+    
+    'python interpreter.py -i input2 -m 5 -p -x tie_fighter -a'
+    'python interpreter.py -i input2 -m 5 -p -x tie_fighter -a'
+    'python interpreter.py -i input2 -m 5 -p -x tie_fighter -a'
+    'python interpreter.py -i input2 -m 5 -p -x tie_fighter -a'
     'python interpreter.py -i input2 -m 5 -p -x tie_fighter -a'
 )
 
